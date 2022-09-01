@@ -71,6 +71,8 @@ void EditorExportPlatformExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_export_project, "preset", "debug", "path", "flags");
 	GDVIRTUAL_BIND(_export_pack, "preset", "debug", "path", "flags");
 	GDVIRTUAL_BIND(_export_zip, "preset", "debug", "path", "flags");
+	GDVIRTUAL_BIND(_export_pack_patch, "preset", "debug", "path", "flags");
+	GDVIRTUAL_BIND(_export_zip_patch, "preset", "debug", "path", "flags");
 
 	GDVIRTUAL_BIND(_get_platform_features);
 
@@ -289,6 +291,26 @@ Error EditorExportPlatformExtension::export_zip(const Ref<EditorExportPreset> &p
 		return ret;
 	}
 	return save_zip(p_preset, p_debug, p_path);
+}
+
+Error EditorExportPlatformExtension::export_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+
+	Error ret = FAILED;
+	if (GDVIRTUAL_CALL(_export_pack_patch, p_preset, p_debug, p_path, p_flags, ret)) {
+		return ret;
+	}
+	return save_pack_patch(p_preset, p_debug, p_path);
+}
+
+Error EditorExportPlatformExtension::export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+
+	Error ret = FAILED;
+	if (GDVIRTUAL_CALL(_export_zip_patch, p_preset, p_debug, p_path, p_flags, ret)) {
+		return ret;
+	}
+	return save_zip_patch(p_preset, p_debug, p_path);
 }
 
 void EditorExportPlatformExtension::get_platform_features(List<String> *r_features) const {
