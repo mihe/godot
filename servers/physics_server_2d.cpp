@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
 #include "core/variant/typed_array.h"
+#include "servers/physics_server_2d_wrap_mt.h"
 
 PhysicsServer2D *PhysicsServer2D::singleton = nullptr;
 
@@ -971,11 +972,7 @@ String PhysicsServer2DManager::get_server_name(int p_id) {
 
 PhysicsServer2D *PhysicsServer2DManager::new_default_server() {
 	ERR_FAIL_COND_V(default_server_id == -1, nullptr);
-	Variant ret;
-	Callable::CallError ce;
-	physics_2d_servers[default_server_id].create_callback.callp(nullptr, 0, ret, ce);
-	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
-	return Object::cast_to<PhysicsServer2D>(ret.get_validated_object());
+	return new_server_from_id(default_server_id);
 }
 
 PhysicsServer2D *PhysicsServer2DManager::new_server(const String &p_name) {
@@ -983,12 +980,19 @@ PhysicsServer2D *PhysicsServer2DManager::new_server(const String &p_name) {
 	if (id == -1) {
 		return nullptr;
 	} else {
-		Variant ret;
-		Callable::CallError ce;
-		physics_2d_servers[id].create_callback.callp(nullptr, 0, ret, ce);
-		ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
-		return Object::cast_to<PhysicsServer2D>(ret.get_validated_object());
+		return new_server_from_id(id);
 	}
+}
+
+PhysicsServer2D *PhysicsServer2DManager::new_server_from_id(int p_id) {
+	ERR_FAIL_INDEX_V(p_id, get_servers_count(), nullptr);
+	Variant ret;
+	Callable::CallError ce;
+	physics_2d_servers[p_id].create_callback.callp(nullptr, 0, ret, ce);
+	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
+	PhysicsServer2D *physics_server = Object::cast_to<PhysicsServer2D>(ret.get_validated_object());
+	bool using_threads = GLOBAL_GET("physics/2d/run_on_separate_thread");
+	return memnew(PhysicsServer2DWrapMT(physics_server, using_threads));
 }
 
 PhysicsServer2DManager::PhysicsServer2DManager() {

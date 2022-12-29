@@ -824,6 +824,7 @@ public:
 	String get_server_name(int p_id);
 	PhysicsServer2D *new_default_server();
 	PhysicsServer2D *new_server(const String &p_name);
+	PhysicsServer2D *new_server_from_id(int p_id);
 
 	PhysicsServer2DManager();
 	~PhysicsServer2DManager();

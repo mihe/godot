@@ -1030,6 +1030,7 @@ public:
 	String get_server_name(int p_id);
 	PhysicsServer3D *new_default_server();
 	PhysicsServer3D *new_server(const String &p_name);
+	PhysicsServer3D *new_server_from_id(int p_id);
 
 	PhysicsServer3DManager();
 	~PhysicsServer3DManager();
