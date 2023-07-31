@@ -355,6 +355,20 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 	return default_value;
 }
 
+// Comparator for sorting PropertyInfo in lexicographical order, using both its `name` and `hint_string`.
+// This helps preserve a stable order when you have multiple sub-groups with the same name.
+struct StablePropertyInfoComparator {
+	bool operator()(const PropertyInfo &p_lhs, const PropertyInfo &p_rhs) const {
+		if (p_lhs.name < p_rhs.name) {
+			return true;
+		} else if (p_rhs.name < p_lhs.name) {
+			return false;
+		} else {
+			return p_lhs.hint_string < p_rhs.hint_string;
+		}
+	}
+};
+
 void DocTools::generate(bool p_basic_types) {
 	// Add ClassDB-exposed classes.
 	{
@@ -433,8 +447,8 @@ void DocTools::generate(bool p_basic_types) {
 			}
 
 			// Sort is still needed here to handle inherited properties, even though it is done below, do not remove.
-			properties.sort();
-			own_properties.sort();
+			properties.sort_custom<StablePropertyInfoComparator>();
+			own_properties.sort_custom<StablePropertyInfoComparator>();
 
 			List<PropertyInfo>::Element *EO = own_properties.front();
 			for (const PropertyInfo &E : properties) {
