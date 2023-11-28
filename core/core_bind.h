@@ -95,7 +95,7 @@ protected:
 	static ResourceSaver *singleton;
 
 public:
-	enum SaverFlags {
+	enum SaverFlags : uint64_t {
 		FLAG_NONE = 0,
 		FLAG_RELATIVE_PATHS = 1,
 		FLAG_BUNDLE_RESOURCES = 2,

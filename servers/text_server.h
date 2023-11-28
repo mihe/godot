@@ -74,7 +74,7 @@ public:
 		ORIENTATION_VERTICAL
 	};
 
-	enum JustificationFlag {
+	enum JustificationFlag : uint64_t {
 		JUSTIFICATION_NONE = 0,
 		JUSTIFICATION_KASHIDA = 1 << 0,
 		JUSTIFICATION_WORD_BOUND = 1 << 1,
@@ -101,7 +101,7 @@ public:
 		AUTOWRAP_WORD_SMART
 	};
 
-	enum LineBreakFlag {
+	enum LineBreakFlag : uint64_t {
 		BREAK_NONE = 0,
 		BREAK_MANDATORY = 1 << 0,
 		BREAK_WORD_BOUND = 1 << 1,
@@ -118,7 +118,7 @@ public:
 		OVERRUN_TRIM_WORD_ELLIPSIS,
 	};
 
-	enum TextOverrunFlag {
+	enum TextOverrunFlag : uint64_t {
 		OVERRUN_NO_TRIM = 0,
 		OVERRUN_TRIM = 1 << 0,
 		OVERRUN_TRIM_WORD_ONLY = 1 << 1,
@@ -127,7 +127,7 @@ public:
 		OVERRUN_JUSTIFICATION_AWARE = 1 << 4,
 	};
 
-	enum GraphemeFlag {
+	enum GraphemeFlag : uint64_t {
 		GRAPHEME_IS_VALID = 1 << 0, // Grapheme is valid.
 		GRAPHEME_IS_RTL = 1 << 1, // Grapheme is right-to-left.
 		GRAPHEME_IS_VIRTUAL = 1 << 2, // Grapheme is not part of source string (added by fit_to_width function, do not affect caret movement).
@@ -191,7 +191,7 @@ public:
 		SPACING_MAX,
 	};
 
-	enum FontStyle {
+	enum FontStyle : uint64_t {
 		FONT_BOLD = 1 << 0,
 		FONT_ITALIC = 1 << 1,
 		FONT_FIXED_WIDTH = 1 << 2,

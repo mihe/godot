@@ -52,7 +52,7 @@ public:
 		PATH_POSTPROCESSING_EDGECENTERED,
 	};
 
-	enum PathMetadataFlags {
+	enum PathMetadataFlags : uint64_t {
 		PATH_METADATA_INCLUDE_NONE = NavigationUtilities::PathMetadataFlags::PATH_INCLUDE_NONE,
 		PATH_METADATA_INCLUDE_TYPES = NavigationUtilities::PathMetadataFlags::PATH_INCLUDE_TYPES,
 		PATH_METADATA_INCLUDE_RIDS = NavigationUtilities::PathMetadataFlags::PATH_INCLUDE_RIDS,

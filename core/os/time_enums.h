@@ -50,7 +50,7 @@ enum Month {
 	MONTH_DECEMBER,
 };
 
-enum Weekday : uint8_t {
+enum Weekday {
 	WEEKDAY_SUNDAY,
 	WEEKDAY_MONDAY,
 	WEEKDAY_TUESDAY,

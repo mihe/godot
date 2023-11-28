@@ -397,7 +397,7 @@ public:
 	/**** BARRIER ****/
 	/*****************/
 
-	enum BarrierMask {
+	enum BarrierMask : uint64_t {
 		BARRIER_MASK_VERTEX = 1,
 		BARRIER_MASK_FRAGMENT = 8,
 		BARRIER_MASK_COMPUTE = 2,
@@ -434,7 +434,7 @@ public:
 		TEXTURE_SAMPLES_MAX
 	};
 
-	enum TextureUsageBits {
+	enum TextureUsageBits : uint64_t {
 		TEXTURE_USAGE_SAMPLING_BIT = (1 << 0),
 		TEXTURE_USAGE_COLOR_ATTACHMENT_BIT = (1 << 1),
 		TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT = (1 << 2),
@@ -778,7 +778,7 @@ public:
 		UNIFORM_TYPE_MAX
 	};
 
-	enum StorageBufferUsage {
+	enum StorageBufferUsage : uint64_t {
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = 1,
 	};
 
@@ -1132,7 +1132,7 @@ public:
 		}
 	};
 
-	enum PipelineDynamicStateFlags {
+	enum PipelineDynamicStateFlags : uint64_t {
 		DYNAMIC_STATE_LINE_WIDTH = (1 << 0),
 		DYNAMIC_STATE_DEPTH_BIAS = (1 << 1),
 		DYNAMIC_STATE_BLEND_CONSTANTS = (1 << 2),

@@ -31,6 +31,8 @@
 #ifndef INPUT_ENUMS_H
 #define INPUT_ENUMS_H
 
+#include <cstdint>
+
 enum class HatDir {
 	UP = 0,
 	RIGHT = 1,
@@ -39,7 +41,7 @@ enum class HatDir {
 	MAX = 4,
 };
 
-enum class HatMask {
+enum class HatMask : uint64_t {
 	CENTER = 0,
 	UP = 1,
 	RIGHT = 2,
@@ -121,13 +123,13 @@ enum class MouseButton {
 	MB_XBUTTON2 = 9, // "XBUTTON2" is a reserved word on Windows.
 };
 
-enum class MouseButtonMask {
+enum class MouseButtonMask : uint64_t {
 	NONE = 0,
-	LEFT = (1 << (int(MouseButton::LEFT) - 1)),
-	RIGHT = (1 << (int(MouseButton::RIGHT) - 1)),
-	MIDDLE = (1 << (int(MouseButton::MIDDLE) - 1)),
-	MB_XBUTTON1 = (1 << (int(MouseButton::MB_XBUTTON1) - 1)),
-	MB_XBUTTON2 = (1 << (int(MouseButton::MB_XBUTTON2) - 1)),
+	LEFT = (1 << (uint64_t(MouseButton::LEFT) - 1)),
+	RIGHT = (1 << (uint64_t(MouseButton::RIGHT) - 1)),
+	MIDDLE = (1 << (uint64_t(MouseButton::MIDDLE) - 1)),
+	MB_XBUTTON1 = (1 << (uint64_t(MouseButton::MB_XBUTTON1) - 1)),
+	MB_XBUTTON2 = (1 << (uint64_t(MouseButton::MB_XBUTTON2) - 1)),
 };
 
 inline MouseButtonMask mouse_button_to_mask(MouseButton button) {

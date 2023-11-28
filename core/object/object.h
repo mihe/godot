@@ -89,7 +89,7 @@ enum PropertyHint {
 	PROPERTY_HINT_MAX,
 };
 
-enum PropertyUsageFlags {
+enum PropertyUsageFlags : uint64_t {
 	PROPERTY_USAGE_NONE = 0,
 	PROPERTY_USAGE_STORAGE = 1 << 1,
 	PROPERTY_USAGE_EDITOR = 1 << 2,
@@ -206,7 +206,7 @@ struct PropertyInfo {
 
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list);
 
-enum MethodFlags {
+enum MethodFlags : uint64_t {
 	METHOD_FLAG_NORMAL = 1,
 	METHOD_FLAG_EDITOR = 2,
 	METHOD_FLAG_CONST = 4,

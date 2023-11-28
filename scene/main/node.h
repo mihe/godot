@@ -80,7 +80,7 @@ public:
 		PROCESS_THREAD_GROUP_SUB_THREAD,
 	};
 
-	enum ProcessThreadMessages {
+	enum ProcessThreadMessages : uint64_t {
 		FLAG_PROCESS_THREAD_MESSAGES = 1,
 		FLAG_PROCESS_THREAD_MESSAGES_PHYSICS = 2,
 		FLAG_PROCESS_THREAD_MESSAGES_ALL = 3,

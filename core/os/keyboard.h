@@ -247,7 +247,7 @@ enum class Key {
 	SECTION = 0x00A7,
 };
 
-enum class KeyModifierMask {
+enum class KeyModifierMask : uint64_t {
 	CODE_MASK = ((1 << 23) - 1), ///< Apply this mask to any keycode to remove modifiers.
 	MODIFIER_MASK = (0x7F << 22), ///< Apply this mask to isolate modifiers.
 	//RESERVED = (1 << 23),

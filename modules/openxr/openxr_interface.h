@@ -223,7 +223,7 @@ public:
 		HAND_JOINT_MAX = 26,
 	};
 
-	enum HandJointFlags {
+	enum HandJointFlags : uint64_t {
 		HAND_JOINT_NONE = 0,
 		HAND_JOINT_ORIENTATION_VALID = 1,
 		HAND_JOINT_ORIENTATION_TRACKED = 2,

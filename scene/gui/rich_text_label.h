@@ -98,7 +98,7 @@ public:
 		CUSTOM_FONT,
 	};
 
-	enum ImageUpdateMask {
+	enum ImageUpdateMask : uint64_t {
 		UPDATE_TEXTURE = 1 << 0,
 		UPDATE_SIZE = 1 << 1,
 		UPDATE_COLOR = 1 << 2,

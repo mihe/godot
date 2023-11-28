@@ -42,7 +42,9 @@
 #include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
 
+#include <stdint.h>
 #include <stdio.h>
+#include <type_traits>
 
 // Variant cannot define an implicit cast operator for every Object subclass, so the
 // casting is done here, to allow binding methods with parameters more specific than Object *
@@ -109,7 +111,8 @@ struct VariantCaster<const T &> {
 	struct VariantInternalAccessor<m_enum> {                                                                            \
 		static _FORCE_INLINE_ m_enum get(const Variant *v) { return m_enum(*VariantInternal::get_int(v)); }             \
 		static _FORCE_INLINE_ void set(Variant *v, m_enum p_value) { *VariantInternal::get_int(v) = (int64_t)p_value; } \
-	};
+	};                                                                                                                  \
+	static_assert(std::is_same_v<std::underlying_type_t<m_enum>, int>, "Enum '" #m_enum "' must use int as underlying type.");
 
 #define VARIANT_BITFIELD_CAST(m_enum)                                                                                                       \
 	MAKE_BITFIELD_TYPE_INFO(m_enum)                                                                                                         \
@@ -137,7 +140,8 @@ struct VariantCaster<const T &> {
 	struct VariantInternalAccessor<BitField<m_enum>> {                                                                                      \
 		static _FORCE_INLINE_ BitField<m_enum> get(const Variant *v) { return BitField<m_enum>(*VariantInternal::get_int(v)); }             \
 		static _FORCE_INLINE_ void set(Variant *v, BitField<m_enum> p_value) { *VariantInternal::get_int(v) = p_value.operator int64_t(); } \
-	};
+	};                                                                                                                                      \
+	static_assert(std::is_same_v<std::underlying_type_t<m_enum>, uint64_t>, "Enum '" #m_enum "' must use uint64_t as underlying type.");
 
 // Object enum casts must go here
 VARIANT_ENUM_CAST(Object::ConnectFlags);

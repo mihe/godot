@@ -60,7 +60,7 @@ public:
 		WRITE_READ = 7,
 	};
 
-	enum UnixPermissionFlags {
+	enum UnixPermissionFlags : uint64_t {
 		UNIX_EXECUTE_OTHER = 0x001,
 		UNIX_WRITE_OTHER = 0x002,
 		UNIX_READ_OTHER = 0x004,
