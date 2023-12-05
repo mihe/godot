@@ -429,8 +429,8 @@ struct _RigidBody2DInOut {
 	int local_shape = 0;
 };
 
-void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
-	if (!freeze || freeze_mode != FREEZE_MODE_KINEMATIC) {
+void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state, bool p_sync_transform) {
+	if (p_sync_transform && (!freeze || freeze_mode != FREEZE_MODE_KINEMATIC)) {
 		set_block_transform_notify(true);
 		set_global_transform(p_state->get_transform());
 		set_block_transform_notify(false);
@@ -449,19 +449,12 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 	lock_callback();
 
 	if (GDVIRTUAL_IS_OVERRIDDEN(_integrate_forces)) {
-		_sync_body_state(p_state);
+		_sync_body_state(p_state, true);
 
-		Transform2D old_transform = get_global_transform();
 		GDVIRTUAL_CALL(_integrate_forces, p_state);
-		Transform2D new_transform = get_global_transform();
-
-		if (new_transform != old_transform) {
-			// Update the physics server with the new transform, to prevent it from being overwritten at the sync below.
-			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
-		}
 	}
 
-	_sync_body_state(p_state);
+	_sync_body_state(p_state, false);
 
 	if (contact_monitor) {
 		contact_monitor->locked = true;

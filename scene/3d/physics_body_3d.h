@@ -222,7 +222,7 @@ private:
 	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
 	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
 
-	void _sync_body_state(PhysicsDirectBodyState3D *p_state);
+	void _sync_body_state(PhysicsDirectBodyState3D *p_state, bool p_sync_transform);
 
 protected:
 	void _notification(int p_what);
@@ -694,7 +694,7 @@ protected:
 	static void _bind_methods();
 
 private:
-	void _sync_body_state(PhysicsDirectBodyState3D *p_state);
+	void _sync_body_state(PhysicsDirectBodyState3D *p_state, bool p_sync_transform);
 	static Skeleton3D *find_skeleton_parent(Node *p_parent);
 
 	void _update_joint_offset();
