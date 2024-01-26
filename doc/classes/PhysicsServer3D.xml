@@ -23,7 +23,7 @@
 			<param index="2" name="transform" type="Transform3D" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)" />
 			<param index="3" name="disabled" type="bool" default="false" />
 			<description>
-				Adds a shape to the area, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
+				Adds a shape to the given area, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
 			</description>
 		</method>
 		<method name="area_attach_object_instance_id">
@@ -31,41 +31,41 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="id" type="int" />
 			<description>
-				Assigns the area to a descendant of [Object], so it can exist in the node tree.
+				Assigns the given area to a descendant of [Object], so it can exist in the node tree.
 			</description>
 		</method>
 		<method name="area_clear_shapes">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<description>
-				Removes all shapes from an area. It does not delete the shapes, so they can be reassigned later.
+				Removes all shapes from the given area. It does not delete the shapes, so they can be reassigned later.
 			</description>
 		</method>
 		<method name="area_create">
 			<return type="RID" />
 			<description>
-				Creates an [Area3D].
+				Creates a new area and returns its internal [RID].
 			</description>
 		</method>
 		<method name="area_get_collision_layer" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />
 			<description>
-				Returns the physics layer or layers an area belongs to.
+				Returns the physics layer or layers that the given area belongs to.
 			</description>
 		</method>
 		<method name="area_get_collision_mask" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />
 			<description>
-				Returns the physics layer or layers an area can contact with.
+				Returns the physics layer or layers that the given area can contact with.
 			</description>
 		</method>
 		<method name="area_get_object_instance_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />
 			<description>
-				Gets the instance ID of the object the area is assigned to.
+				Gets the instance ID of the object that the given area is assigned to.
 			</description>
 		</method>
 		<method name="area_get_param" qualifiers="const">
@@ -73,7 +73,7 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.AreaParameter" />
 			<description>
-				Returns an area parameter value. A list of available parameters is on the [enum AreaParameter] constants.
+				Returns the value of the given parameter for the given area. A list of available parameters is on the [enum AreaParameter] constants.
 			</description>
 		</method>
 		<method name="area_get_shape" qualifiers="const">
@@ -81,14 +81,14 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
-				Returns the [RID] of the nth shape of an area.
+				Returns the [RID] of the nth shape of the given area.
 			</description>
 		</method>
 		<method name="area_get_shape_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />
 			<description>
-				Returns the number of shapes assigned to an area.
+				Returns the number of shapes assigned to the given area.
 			</description>
 		</method>
 		<method name="area_get_shape_transform" qualifiers="const">
@@ -96,21 +96,21 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
-				Returns the transform matrix of a shape within an area.
+				Returns the transform matrix of a shape within the given area.
 			</description>
 		</method>
 		<method name="area_get_space" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="area" type="RID" />
 			<description>
-				Returns the space assigned to the area.
+				Returns the space assigned to the given area.
 			</description>
 		</method>
 		<method name="area_get_transform" qualifiers="const">
 			<return type="Transform3D" />
 			<param index="0" name="area" type="RID" />
 			<description>
-				Returns the transform matrix for an area.
+				Returns the transform matrix for the given area.
 			</description>
 		</method>
 		<method name="area_remove_shape">
@@ -118,7 +118,7 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
-				Removes a shape from an area. It does not delete the shape, so it can be reassigned later.
+				Removes a shape from the given area. It does not delete the shape, so it can be reassigned later.
 			</description>
 		</method>
 		<method name="area_set_area_monitor_callback">
@@ -126,7 +126,7 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
-				Sets the area's area monitor callback. This callback will be called when any other (shape of an) area enters or exits (a shape of) the given area, and must take the following five parameters:
+				Sets the given area's area monitor callback. This callback will be called when any other (shape of an) area enters or exits (a shape of) the given area, and must take the following five parameters:
 				1. an integer [code]status[/code]: either [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED] depending on whether the other area's shape entered or exited the area,
 				2. an [RID] [code]area_rid[/code]: the [RID] of the other area that entered or exited the area,
 				3. an integer [code]instance_id[/code]: the [code]ObjectID[/code] attached to the other area,
@@ -140,7 +140,7 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="layer" type="int" />
 			<description>
-				Assigns the area to one or many physics layers.
+				Sets the physics layer or layers that the given area belongs to.
 			</description>
 		</method>
 		<method name="area_set_collision_mask">
@@ -148,7 +148,7 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="mask" type="int" />
 			<description>
-				Sets which physics layers the area will monitor.
+				Sets which physics layer or layers that the given area will monitor.
 			</description>
 		</method>
 		<method name="area_set_monitor_callback">
@@ -156,7 +156,7 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
-				Sets the area's body monitor callback. This callback will be called when any other (shape of a) body enters or exits (a shape of) the given area, and must take the following five parameters:
+				Sets the given area's body monitor callback. This callback will be called when any other (shape of a) body enters or exits (a shape of) the given area, and must take the following five parameters:
 				1. an integer [code]status[/code]: either [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED] depending on whether the other body shape entered or exited the area,
 				2. an [RID] [code]body_rid[/code]: the [RID] of the body that entered or exited the area,
 				3. an integer [code]instance_id[/code]: the [code]ObjectID[/code] attached to the body,
@@ -178,7 +178,7 @@
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.AreaParameter" />
 			<param index="2" name="value" type="Variant" />
 			<description>
-				Sets the value for an area parameter. A list of available parameters is on the [enum AreaParameter] constants.
+				Sets the value of the given parameter for the given area. A list of available parameters is on the [enum AreaParameter] constants.
 			</description>
 		</method>
 		<method name="area_set_ray_pickable">
@@ -212,7 +212,7 @@
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="transform" type="Transform3D" />
 			<description>
-				Sets the transform matrix for an area shape.
+				Sets the transform matrix for the given area shape.
 			</description>
 		</method>
 		<method name="area_set_space">
@@ -220,7 +220,7 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="space" type="RID" />
 			<description>
-				Assigns a space to the area.
+				Assigns a space to the given area.
 			</description>
 		</method>
 		<method name="area_set_transform">
@@ -228,7 +228,7 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="transform" type="Transform3D" />
 			<description>
-				Sets the transform matrix for an area.
+				Sets the transform matrix for the given area.
 			</description>
 		</method>
 		<method name="body_add_collision_exception">
@@ -236,7 +236,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="excepted_body" type="RID" />
 			<description>
-				Adds a body to the list of bodies exempt from collisions.
+				Adds the given body to the list of bodies exempt from collisions.
 			</description>
 		</method>
 		<method name="body_add_constant_central_force">
@@ -338,33 +338,34 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="id" type="int" />
 			<description>
-				Assigns the area to a descendant of [Object], so it can exist in the node tree.
+				Assigns the given area to a descendant of [Object], so it can exist in the node tree.
 			</description>
 		</method>
 		<method name="body_clear_shapes">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Removes all shapes from a body.
+				Removes all shapes from the given body.
 			</description>
 		</method>
 		<method name="body_create">
 			<return type="RID" />
 			<description>
+				Creates a new body and returns its internal [RID].
 			</description>
 		</method>
 		<method name="body_get_collision_layer" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns the physics layer or layers a body belongs to.
+				Returns the physics layer or layers that the given body belongs to.
 			</description>
 		</method>
 		<method name="body_get_collision_mask" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns the physics layer or layers a body can collide with.
+				Returns the physics layer or layers that the given body can collide with.
 			</description>
 		</method>
 		<method name="body_get_collision_priority" qualifiers="const">
@@ -415,7 +416,7 @@
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Gets the instance ID of the object the area is assigned to.
+				Gets the instance ID of the object that the given area is assigned to.
 			</description>
 		</method>
 		<method name="body_get_param" qualifiers="const">
@@ -423,7 +424,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.BodyParameter" />
 			<description>
-				Returns the value of a body parameter. A list of available parameters is on the [enum BodyParameter] constants.
+				Returns the value of the given parameter for the given body. A list of available parameters is on the [enum BodyParameter] constants.
 			</description>
 		</method>
 		<method name="body_get_shape" qualifiers="const">
@@ -431,14 +432,14 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
-				Returns the [RID] of the nth shape of a body.
+				Returns the [RID] of the nth shape of the given body.
 			</description>
 		</method>
 		<method name="body_get_shape_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns the number of shapes assigned to a body.
+				Returns the number of shapes assigned to the given body.
 			</description>
 		</method>
 		<method name="body_get_shape_transform" qualifiers="const">
@@ -446,14 +447,14 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
-				Returns the transform matrix of a body shape.
+				Returns the transform matrix of the given body's shape at the given index.
 			</description>
 		</method>
 		<method name="body_get_space" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns the [RID] of the space assigned to a body.
+				Returns the [RID] of the space assigned to the given body.
 			</description>
 		</method>
 		<method name="body_get_state" qualifiers="const">
@@ -461,7 +462,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
 			<description>
-				Returns a body state.
+				Returns the value of the given state for the given body.
 			</description>
 		</method>
 		<method name="body_is_axis_locked" qualifiers="const">
@@ -482,7 +483,7 @@
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Returns whether the given body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
@@ -490,7 +491,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="excepted_body" type="RID" />
 			<description>
-				Removes a body from the list of bodies exempt from collisions.
+				Removes the given body from the list of bodies exempt from collisions.
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
 			</description>
 		</method>
@@ -499,7 +500,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
-				Removes a shape from a body. The shape is not deleted, so it can be reused afterwards.
+				Removes a shape from the given body. The shape is not deleted, so it can be reused afterwards.
 			</description>
 		</method>
 		<method name="body_reset_mass_properties">
@@ -530,7 +531,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="layer" type="int" />
 			<description>
-				Sets the physics layer or layers a body belongs to.
+				Sets the physics layer or layers that the given body belongs to.
 			</description>
 		</method>
 		<method name="body_set_collision_mask">
@@ -538,7 +539,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="mask" type="int" />
 			<description>
-				Sets the physics layer or layers a body can collide with.
+				Sets the physics layer or layers that the given body can collide with.
 			</description>
 		</method>
 		<method name="body_set_collision_priority">
@@ -608,7 +609,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Sets whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Sets whether the given body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
 			</description>
 		</method>
 		<method name="body_set_param">
@@ -617,7 +618,7 @@
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.BodyParameter" />
 			<param index="2" name="value" type="Variant" />
 			<description>
-				Sets a body parameter. A list of available parameters is on the [enum BodyParameter] constants.
+				Sets the given body parameter. A list of available parameters is on the [enum BodyParameter] constants.
 			</description>
 		</method>
 		<method name="body_set_ray_pickable">
@@ -651,7 +652,7 @@
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="transform" type="Transform3D" />
 			<description>
-				Sets the transform matrix for a body shape.
+				Sets the transform matrix for the given body shape.
 			</description>
 		</method>
 		<method name="body_set_space">
@@ -668,7 +669,7 @@
 			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
 			<param index="2" name="value" type="Variant" />
 			<description>
-				Sets a body state (see [enum BodyState] constants).
+				Sets the given body state (see [enum BodyState] constants).
 			</description>
 		</method>
 		<method name="body_test_motion">
@@ -683,16 +684,19 @@
 		<method name="box_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a new box shape and returns its internal [RID].
 			</description>
 		</method>
 		<method name="capsule_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a new capsule polygon shape and returns its internal [RID].
 			</description>
 		</method>
 		<method name="concave_polygon_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a new concave polygon shape and returns its internal [RID].
 			</description>
 		</method>
 		<method name="cone_twist_joint_get_param" qualifiers="const">
@@ -715,16 +719,19 @@
 		<method name="convex_polygon_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a new convex polygon shape and returns its internal [RID].
 			</description>
 		</method>
 		<method name="custom_shape_create">
 			<return type="RID" />
 			<description>
+				This does nothing, as it's not actually implemented in Godot's default physics implementation.
 			</description>
 		</method>
 		<method name="cylinder_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a new cylinder shape and returns its internal [RID].
 			</description>
 		</method>
 		<method name="free_rid">
@@ -782,6 +789,7 @@
 		<method name="heightmap_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a new heightmap shape and returns its internal [RID].
 			</description>
 		</method>
 		<method name="hinge_joint_get_flag" qualifiers="const">
@@ -827,6 +835,8 @@
 		<method name="joint_create">
 			<return type="RID" />
 			<description>
+				Creates a new joint and returns its internal [RID].
+				[b]Note:[/b] This new joint will have no type and must have its type set using methods like [method joint_make_hinge].
 			</description>
 		</method>
 		<method name="joint_disable_collisions_between_bodies">
@@ -966,6 +976,7 @@
 		<method name="separation_ray_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a new separation ray shape and returns its internal [RID].
 			</description>
 		</method>
 		<method name="set_active">
@@ -1275,7 +1286,7 @@
 		<method name="space_create">
 			<return type="RID" />
 			<description>
-				Creates a space. A space is a collection of parameters for the physics engine that can be assigned to an area or a body. It can be assigned to an area with [method area_set_space], or to a body with [method body_set_space].
+				Creates a new space and returns its internal [RID]. A space is a collection of parameters for the physics engine that can be assigned to an area or a body. It can be assigned to an area with [method area_set_space], or to a body with [method body_set_space].
 			</description>
 		</method>
 		<method name="space_get_direct_state">
@@ -1320,11 +1331,13 @@
 		<method name="sphere_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a new sphere shape and returns its internal [RID].
 			</description>
 		</method>
 		<method name="world_boundary_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a new world boundary shape and returns its internal [RID].
 			</description>
 		</method>
 	</methods>
