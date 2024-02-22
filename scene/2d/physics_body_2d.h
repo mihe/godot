@@ -45,7 +45,12 @@ protected:
 	static void _bind_methods();
 	PhysicsBody2D(PhysicsServer2D::BodyMode p_mode);
 
+	virtual bool _should_notify_transform() override;
+
 	Ref<KinematicCollision2D> motion_cache;
+
+	// This must be static in order to also affect any children of this type during propagation.
+	static bool block_notify_transform;
 
 	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_test_only = false, real_t p_margin = 0.08, bool p_recovery_as_collision = false);
 
@@ -219,6 +224,8 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual bool _should_propagate_notify_transform();
 
 	void _validate_property(PropertyInfo &p_property) const;
 

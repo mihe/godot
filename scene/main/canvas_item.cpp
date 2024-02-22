@@ -325,7 +325,7 @@ void CanvasItem::_notification(int p_what) {
 			_update_texture_filter_changed(false);
 			_update_texture_repeat_changed(false);
 
-			if (!block_transform_notify && !xform_change.in_list()) {
+			if (_should_notify_transform() && !xform_change.in_list()) {
 				get_tree()->xform_change_list.add(&xform_change);
 			}
 
@@ -879,9 +879,17 @@ void CanvasItem::draw_char_outline(const Ref<Font> &p_font, const Point2 &p_pos,
 }
 
 void CanvasItem::_notify_transform_deferred() {
-	if (is_inside_tree() && notify_transform && !xform_change.in_list()) {
+	if (is_inside_tree() && !xform_change.in_list()) {
 		get_tree()->xform_change_list.add(&xform_change);
 	}
+}
+
+bool CanvasItem::_should_notify_transform() {
+	return notify_transform && !block_transform_notify && is_inside_tree();
+}
+
+bool CanvasItem::_should_notify_local_transform() {
+	return notify_local_transform && !block_transform_notify && is_inside_tree();
 }
 
 void CanvasItem::_notify_transform(CanvasItem *p_node) {
@@ -897,24 +905,22 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 
 	p_node->_set_global_invalid(true);
 
-	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
-		if (!p_node->block_transform_notify) {
-			if (p_node->is_inside_tree()) {
-				if (is_accessible_from_caller_thread()) {
-					get_tree()->xform_change_list.add(&p_node->xform_change);
-				} else {
-					// Should be rare, but still needs to be handled.
-					callable_mp(p_node, &CanvasItem::_notify_transform_deferred).call_deferred();
-				}
-			}
+	if (p_node->_should_notify_transform() && !p_node->xform_change.in_list()) {
+		if (is_accessible_from_caller_thread()) {
+			get_tree()->xform_change_list.add(&p_node->xform_change);
+		} else {
+			// Should be rare, but still needs to be handled.
+			callable_mp(p_node, &CanvasItem::_notify_transform_deferred).call_deferred();
 		}
 	}
 
-	for (CanvasItem *ci : p_node->children_items) {
-		if (ci->top_level) {
-			continue;
+	if (p_node->_should_propagate_notify_transform()) {
+		for (CanvasItem *ci : p_node->children_items) {
+			if (ci->top_level) {
+				continue;
+			}
+			_notify_transform(ci);
 		}
-		_notify_transform(ci);
 	}
 }
 

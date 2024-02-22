@@ -32,6 +32,8 @@
 
 #include "scene/scene_string_names.h"
 
+bool PhysicsBody2D::block_notify_transform = false;
+
 void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08), DEFVAL(false));
@@ -46,6 +48,10 @@ PhysicsBody2D::PhysicsBody2D(PhysicsServer2D::BodyMode p_mode) :
 		CollisionObject2D(PhysicsServer2D::get_singleton()->body_create(), false) {
 	set_body_mode(p_mode);
 	set_pickable(false);
+}
+
+bool PhysicsBody2D::_should_notify_transform() {
+	return !block_notify_transform && CanvasItem::_should_notify_transform();
 }
 
 PhysicsBody2D::~PhysicsBody2D() {
@@ -438,9 +444,9 @@ struct _RigidBody2DInOut {
 
 void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
 	if (!freeze || freeze_mode != FREEZE_MODE_KINEMATIC) {
-		set_block_transform_notify(true);
+		block_notify_transform = true;
 		set_global_transform(p_state->get_transform());
-		set_block_transform_notify(false);
+		block_notify_transform = false;
 	}
 
 	linear_velocity = p_state->get_linear_velocity();
@@ -1077,6 +1083,13 @@ void RigidBody2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(CCD_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(CCD_MODE_CAST_RAY);
 	BIND_ENUM_CONSTANT(CCD_MODE_CAST_SHAPE);
+}
+
+bool RigidBody2D::_should_propagate_notify_transform() {
+	// We need to prevent any transform notifications from propagating to our children while we're sleeping, since our state synchronization
+	// callback won't be called during that time, which means our parent would get full control of our children (like a mesh), which could lead
+	// to weird desync issues.
+	return !sleeping;
 }
 
 void RigidBody2D::_validate_property(PropertyInfo &p_property) const {

@@ -153,6 +153,10 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual bool _should_notify_transform();
+	virtual bool _should_notify_local_transform();
+	virtual bool _should_propagate_notify_transform() { return true; }
+
 	void _validate_property(PropertyInfo &p_property) const;
 
 	bool _property_can_revert(const StringName &p_name) const;

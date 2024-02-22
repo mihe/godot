@@ -32,6 +32,8 @@
 
 #include "scene/scene_string_names.h"
 
+bool PhysicsBody3D::block_notify_transform = false;
+
 void PhysicsBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
@@ -56,6 +58,10 @@ void PhysicsBody3D::_bind_methods() {
 PhysicsBody3D::PhysicsBody3D(PhysicsServer3D::BodyMode p_mode) :
 		CollisionObject3D(PhysicsServer3D::get_singleton()->body_create(), false) {
 	set_body_mode(p_mode);
+}
+
+bool PhysicsBody3D::_should_notify_transform() {
+	return !block_notify_transform && Node3D::_should_notify_transform();
 }
 
 PhysicsBody3D::~PhysicsBody3D() {
@@ -493,9 +499,9 @@ struct _RigidBodyInOut {
 };
 
 void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
-	set_ignore_transform_notification(true);
+	block_notify_transform = true;
 	set_global_transform(p_state->get_transform());
-	set_ignore_transform_notification(false);
+	block_notify_transform = false;
 
 	linear_velocity = p_state->get_linear_velocity();
 	angular_velocity = p_state->get_angular_velocity();
@@ -1142,6 +1148,13 @@ void RigidBody3D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(DAMP_MODE_COMBINE);
 	BIND_ENUM_CONSTANT(DAMP_MODE_REPLACE);
+}
+
+bool RigidBody3D::_should_propagate_notify_transform() {
+	// We need to prevent any transform notifications from propagating to our children while we're sleeping, since our state synchronization
+	// callback won't be called during that time, which means our parent would get full control of our children (like a mesh), which could lead
+	// to weird desync issues.
+	return !sleeping;
 }
 
 void RigidBody3D::_validate_property(PropertyInfo &p_property) const {
@@ -2944,9 +2957,9 @@ void PhysicalBone3D::_notification(int p_what) {
 }
 
 void PhysicalBone3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
-	set_ignore_transform_notification(true);
+	block_notify_transform = true;
 	set_global_transform(p_state->get_transform());
-	set_ignore_transform_notification(false);
+	block_notify_transform = false;
 
 	linear_velocity = p_state->get_linear_velocity();
 	angular_velocity = p_state->get_angular_velocity();
@@ -3084,9 +3097,9 @@ Skeleton3D *PhysicalBone3D::find_skeleton_parent(Node *p_parent) {
 void PhysicalBone3D::_update_joint_offset() {
 	_fix_joint_offset();
 
-	set_ignore_transform_notification(true);
+	block_notify_transform = true;
 	reset_to_rest_position();
-	set_ignore_transform_notification(false);
+	block_notify_transform = false;
 
 #ifdef TOOLS_ENABLED
 	update_gizmos();

@@ -46,9 +46,14 @@ protected:
 	static void _bind_methods();
 	PhysicsBody3D(PhysicsServer3D::BodyMode p_mode);
 
+	virtual bool _should_notify_transform() override;
+
 	Ref<KinematicCollision3D> motion_cache;
 
 	uint16_t locked_axis = 0;
+
+	// This must be static in order to also affect any children of this type during propagation.
+	static bool block_notify_transform;
 
 	Ref<KinematicCollision3D> _move(const Vector3 &p_motion, bool p_test_only = false, real_t p_margin = 0.001, bool p_recovery_as_collision = false, int p_max_collisions = 1);
 
@@ -229,6 +234,8 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual bool _should_propagate_notify_transform() override;
 
 	void _validate_property(PropertyInfo &p_property) const;
 

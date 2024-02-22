@@ -73,12 +73,7 @@ Node3DGizmo::Node3DGizmo() {
 }
 
 void Node3D::_notify_dirty() {
-#ifdef TOOLS_ENABLED
-	if ((!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
-#else
-	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
-
-#endif
+	if (_should_notify_transform() && !xform_change.in_list()) {
 		get_tree()->xform_change_list.add(&xform_change);
 	}
 }
@@ -108,17 +103,16 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 		return;
 	}
 
-	for (Node3D *&E : data.children) {
-		if (E->data.top_level) {
-			continue; //don't propagate to a top_level
+	if (_should_propagate_notify_transform()) {
+		for (Node3D *&E : data.children) {
+			if (E->data.top_level) {
+				continue; //don't propagate to a top_level
+			}
+			E->_propagate_transform_changed(p_origin);
 		}
-		E->_propagate_transform_changed(p_origin);
 	}
-#ifdef TOOLS_ENABLED
-	if ((!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
-#else
-	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
-#endif
+
+	if (_should_notify_transform() && !xform_change.in_list()) {
 		if (likely(is_accessible_from_caller_thread())) {
 			get_tree()->xform_change_list.add(&xform_change);
 		} else {
@@ -250,7 +244,7 @@ void Node3D::set_quaternion(const Quaternion &p_quaternion) {
 	_replace_dirty_mask(DIRTY_NONE);
 
 	_propagate_transform_changed(this);
-	if (data.notify_local_transform) {
+	if (_should_notify_local_transform()) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
 }
@@ -309,7 +303,7 @@ void Node3D::set_transform(const Transform3D &p_transform) {
 	_replace_dirty_mask(DIRTY_EULER_ROTATION_AND_SCALE); // Make rot/scale dirty.
 
 	_propagate_transform_changed(this);
-	if (data.notify_local_transform) {
+	if (_should_notify_local_transform()) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
 }
@@ -412,7 +406,7 @@ void Node3D::set_position(const Vector3 &p_position) {
 	ERR_THREAD_GUARD;
 	data.local_transform.origin = p_position;
 	_propagate_transform_changed(this);
-	if (data.notify_local_transform) {
+	if (_should_notify_local_transform()) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
 }
@@ -440,7 +434,7 @@ void Node3D::set_rotation_edit_mode(RotationEditMode p_mode) {
 
 	if (transform_changed) {
 		_propagate_transform_changed(this);
-		if (data.notify_local_transform) {
+		if (_should_notify_local_transform()) {
 			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 		}
 	}
@@ -477,7 +471,7 @@ void Node3D::set_rotation_order(EulerOrder p_order) {
 
 	if (transform_changed) {
 		_propagate_transform_changed(this);
-		if (data.notify_local_transform) {
+		if (_should_notify_local_transform()) {
 			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 		}
 	}
@@ -500,7 +494,7 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 	data.euler_rotation = p_euler_rad;
 	_replace_dirty_mask(DIRTY_LOCAL_TRANSFORM);
 	_propagate_transform_changed(this);
-	if (data.notify_local_transform) {
+	if (_should_notify_local_transform()) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
 }
@@ -522,7 +516,7 @@ void Node3D::set_scale(const Vector3 &p_scale) {
 	data.scale = p_scale;
 	_replace_dirty_mask(DIRTY_LOCAL_TRANSFORM);
 	_propagate_transform_changed(this);
-	if (data.notify_local_transform) {
+	if (_should_notify_local_transform()) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
 }
@@ -1029,6 +1023,28 @@ void Node3D::set_visibility_parent(const NodePath &p_path) {
 NodePath Node3D::get_visibility_parent() const {
 	ERR_READ_THREAD_GUARD_V(NodePath());
 	return visibility_parent_path;
+}
+
+bool Node3D::_should_notify_transform() {
+	if (data.ignore_notification) {
+		return false;
+	}
+
+	if (!is_inside_tree()) {
+		return false;
+	}
+
+#ifdef TOOLS_ENABLED
+	if (!data.gizmos.is_empty()) {
+		return true;
+	}
+#endif
+
+	return data.notify_transform;
+}
+
+bool Node3D::_should_notify_local_transform() {
+	return data.notify_local_transform;
 }
 
 void Node3D::_validate_property(PropertyInfo &p_property) const {
