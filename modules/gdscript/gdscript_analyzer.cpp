@@ -1277,6 +1277,25 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 #endif
 		}
 
+		for (int i = 0; i < p_class->members.size(); i++) {
+			GDScriptParser::ClassNode::Member member = p_class->members[i];
+			if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
+				GDScriptParser::SignalNode *observable_signal = member.variable->observable_signal;
+				if (observable_signal && observable_signal->is_implicit) {
+					if (!p_class->has_member(observable_signal->identifier->name)) {
+						p_class->add_member(observable_signal);
+					}
+				}
+			}
+		}
+
+		for (int i = 0; i < p_class->members.size(); i++) {
+			GDScriptParser::ClassNode::Member member = p_class->members[i];
+			if (member.type == GDScriptParser::ClassNode::Member::SIGNAL && member.signal->is_implicit) {
+				resolve_class_member(p_class, i);
+			}
+		}
+
 #ifdef DEBUG_ENABLED
 		if (!has_static_data && p_class->annotated_static_unload) {
 			GDScriptParser::Node *static_unload = nullptr;
