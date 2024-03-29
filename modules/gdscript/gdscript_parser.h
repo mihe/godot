@@ -1054,6 +1054,7 @@ public:
 #endif // TOOLS_ENABLED
 
 		int usages = 0;
+		bool is_implicit = false;
 
 		SignalNode() {
 			type = SIGNAL;
@@ -1257,6 +1258,7 @@ public:
 
 		bool exported = false;
 		bool onready = false;
+		SignalNode *observable_signal = nullptr;
 		PropertyInfo export_info;
 		int assignments = 0;
 		bool is_static = false;
@@ -1431,7 +1433,7 @@ private:
 	void complete_extents(Node *p_node);
 	void update_extents(Node *p_node);
 	void reset_extents(Node *p_node, GDScriptTokenizer::Token p_token);
-	void reset_extents(Node *p_node, Node *p_from);
+	void reset_extents(Node *p_node, const Node *p_from);
 
 	template <typename T>
 	T *alloc_node() {
@@ -1496,6 +1498,7 @@ private:
 	bool tool_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool icon_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool observable_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_storage_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
