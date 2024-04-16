@@ -1855,9 +1855,9 @@ Error EditorExportPlatform::export_pack(const Ref<EditorExportPreset> &p_preset,
 	return save_pack(p_preset, p_debug, p_path);
 }
 
-Error EditorExportPlatform::export_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatform::export_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	Error err = _load_patches(p_preset->get_enabled_patches());
+	Error err = _load_patches(p_patches.is_empty() ? p_preset->get_enabled_patches() : p_patches);
 	if (err != OK) {
 		return err;
 	}
@@ -1871,9 +1871,9 @@ Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, 
 	return save_zip(p_preset, p_debug, p_path);
 }
 
-Error EditorExportPlatform::export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatform::export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	Error err = _load_patches(p_preset->get_enabled_patches());
+	Error err = _load_patches(p_patches.is_empty() ? p_preset->get_enabled_patches() : p_patches);
 	if (err != OK) {
 		return err;
 	}
