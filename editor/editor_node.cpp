@@ -983,13 +983,13 @@ void EditorNode::_fs_changed() {
 				if (export_defer.pack_only) { // Only export .pck or .zip data pack.
 					if (export_path.ends_with(".zip")) {
 						if (export_defer.patch) {
-							err = platform->export_zip_patch(export_preset, export_defer.debug, export_path);
+							err = platform->export_zip_patch(export_preset, export_defer.debug, export_path, export_defer.patches);
 						} else {
 							err = platform->export_zip(export_preset, export_defer.debug, export_path);
 						}
 					} else if (export_path.ends_with(".pck")) {
 						if (export_defer.patch) {
-							err = platform->export_patch(export_preset, export_defer.debug, export_path);
+							err = platform->export_patch(export_preset, export_defer.debug, export_path, export_defer.patches);
 						} else {
 							err = platform->export_pack(export_preset, export_defer.debug, export_path);
 						}
@@ -4856,13 +4856,14 @@ void EditorNode::_begin_first_scan() {
 	requested_first_scan = true;
 }
 
-Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, bool p_patch) {
+Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, bool p_patch, const Vector<String> &p_patches) {
 	export_defer.preset = p_preset;
 	export_defer.path = p_path;
 	export_defer.debug = p_debug;
 	export_defer.pack_only = p_pack_only;
 	export_defer.android_build_template = p_android_build_template;
 	export_defer.patch = p_patch;
+	export_defer.patches = p_patches;
 	cmdline_export_mode = true;
 	return OK;
 }
