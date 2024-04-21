@@ -167,21 +167,15 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	return has_messages;
 }
 
-Error EditorExportPlatform::_load_patches(const Ref<EditorExportPreset> &p_preset) {
-	Error err = OK;
-	Vector<String> patches = p_preset->get_patches();
-	if (!patches.is_empty()) {
-		for (const String &path : patches) {
-			if (path.ends_with("*")) {
-				err = PackedData::get_singleton()->add_pack(path.replace("*", ""), true, 0);
-				if (err != OK) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Patch Creation"), vformat(TTR("Could not recognize pack file from path \"%s\"."), path));
-					return err;
-				}
-			}
+Error EditorExportPlatform::_load_patches(const Vector<String> &p_patches) {
+	for (const String &path : p_patches) {
+		Error err = PackedData::get_singleton()->add_pack(path.replace("*", ""), true, 0);
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Patch Creation"), vformat(TTR("Could not recognize pack file from path \"%s\"."), path));
+			return err;
 		}
 	}
-	return err;
+	return OK;
 }
 
 bool EditorExportPlatform::_check_hash(const uint8_t *p_hash, const Vector<uint8_t> &p_data) {
@@ -1847,7 +1841,7 @@ Error EditorExportPlatform::export_pack(const Ref<EditorExportPreset> &p_preset,
 
 Error EditorExportPlatform::export_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	Error err = _load_patches(p_preset);
+	Error err = _load_patches(p_preset->get_enabled_patches());
 	if (err != OK) {
 		return err;
 	}
@@ -1863,7 +1857,7 @@ Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, 
 
 Error EditorExportPlatform::export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	Error err = _load_patches(p_preset);
+	Error err = _load_patches(p_preset->get_enabled_patches());
 	if (err != OK) {
 		return err;
 	}

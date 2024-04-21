@@ -300,25 +300,24 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 
 	patches->clear();
 	TreeItem *patch_root = patches->create_item();
-	Vector<String> patchlist = current->get_patches();
-	for (int i = 0; i < patchlist.size(); i++) {
+	Vector<String> patch_list = current->get_patches();
+	for (int i = 0; i < patch_list.size(); i++) {
+		String patch_path = patch_list[i];
+		String patch_filename = patch_path.get_file();
 		TreeItem *patch = patches->create_item(patch_root);
 		patch->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		patch->set_editable(0, true);
-		String filename = patchlist[i].get_file();
-		if (filename.ends_with("*")) {
-			patch->set_checked(0, true);
-		}
-		patch->set_text(0, filename.replace("*", ""));
-		patch->set_tooltip_text(0, patchlist[i].replace("*", ""));
+		patch->set_checked(0, current->is_patch_enabled(patch_path));
+		patch->set_text(0, patch_filename.replace("*", ""));
+		patch->set_tooltip_text(0, patch_list[i].replace("*", ""));
 		patch->set_metadata(0, i);
 		patch->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0);
 		patch->add_button(0, get_theme_icon(SNAME("folder"), SNAME("FileDialog")), 1);
 	}
 
 	TreeItem *patch_add = patches->create_item(patch_root);
-	patch_add->set_metadata(0, patchlist.size());
-	if (patchlist.is_empty()) {
+	patch_add->set_metadata(0, patch_list.size());
+	if (patch_list.is_empty()) {
 		patch_add->set_text(0, TTR("Add initial export..."));
 	} else {
 		patch_add->set_text(0, TTR("Add previous patches..."));
@@ -514,13 +513,7 @@ void ProjectExportDialog::_patch_edited() {
 
 	ERR_FAIL_INDEX(index, preset_patches.size());
 
-	String patch = preset_patches[index].replace("*", "");
-
-	if (item->is_checked(0)) {
-		patch += "*";
-	}
-
-	current->set_patch(index, patch);
+	current->set_patch(index, preset_patches[index], item->is_checked(0));
 }
 
 void ProjectExportDialog::_patch_selected(const String &p_path) {
@@ -530,10 +523,9 @@ void ProjectExportDialog::_patch_selected(const String &p_path) {
 	Vector<String> preset_patches = current->get_patches();
 
 	if (patch_index >= preset_patches.size()) {
-		current->add_patch(ProjectSettings::get_singleton()->get_resource_path().path_to_file(p_path) + "*");
+		current->add_patch(ProjectSettings::get_singleton()->get_resource_path().path_to_file(p_path), true);
 	} else {
-		String enabled = preset_patches[patch_index].ends_with("*") ? String("*") : String();
-		current->set_patch(patch_index, ProjectSettings::get_singleton()->get_resource_path().path_to_file(p_path) + enabled);
+		current->set_patch(patch_index, ProjectSettings::get_singleton()->get_resource_path().path_to_file(p_path), current->is_patch_enabled(p_path));
 	}
 
 	_update_current_preset();
@@ -759,13 +751,8 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_export_filter(current->get_export_filter());
 	preset->set_include_filter(current->get_include_filter());
 	preset->set_exclude_filter(current->get_exclude_filter());
-
-	Vector<String> list = current->get_patches();
-
-	for (const String &patch : list) {
-		preset->add_patch(patch);
-	}
-
+	preset->set_patches(current->get_patches());
+	preset->set_disabled_patches(current->get_disabled_patches());
 	preset->set_custom_features(current->get_custom_features());
 
 	for (const KeyValue<StringName, Variant> &E : current->get_values()) {
@@ -921,9 +908,10 @@ void ProjectExportDialog::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		}
 
 		Ref<EditorExportPreset> preset = get_current_preset();
-		String patch = preset->get_patch(from_pos);
+		String patch_path = preset->get_patch(from_pos);
+		bool patch_enabled = preset->is_patch_enabled(from_pos);
 		preset->remove_patch(from_pos);
-		preset->add_patch(patch, to_pos);
+		preset->add_patch(patch_path, patch_enabled, to_pos);
 
 		_update_current_preset();
 	}

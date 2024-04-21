@@ -100,7 +100,7 @@ private:
 	void _export_find_customized_resources(const Ref<EditorExportPreset> &p_preset, EditorFileSystemDirectory *p_dir, EditorExportPreset::FileExportMode p_mode, HashSet<String> &p_paths);
 	void _export_find_dependencies(const String &p_path, HashSet<String> &p_paths);
 
-	Error _load_patches(const Ref<EditorExportPreset> &p_preset);
+	Error _load_patches(const Vector<String> &p_patches);
 	static bool _check_hash(const uint8_t *p_hash, const Vector<uint8_t> &p_data);
 
 	Error _save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, EditorExportSaveFunction p_func, Vector<SharedObject> *p_so_files = nullptr, bool p_embed = false, int64_t *r_embedded_start = nullptr, int64_t *r_embedded_size = nullptr);
