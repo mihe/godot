@@ -494,6 +494,8 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 			basedir = basedir.get_base_dir();
 		}
 
+		GDScriptCache::remove_parser(path);
+
 		GDScriptParser parser;
 		GDScriptAnalyzer analyzer(&parser);
 		Error err = parser.parse(source, path, false);

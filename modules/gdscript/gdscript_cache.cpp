@@ -220,6 +220,11 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 	return ref;
 }
 
+void GDScriptCache::remove_parser(const String &p_path) {
+	MutexLock lock(singleton->mutex);
+	singleton->parser_map.erase(p_path);
+}
+
 String GDScriptCache::get_source_code(const String &p_path) {
 	Vector<uint8_t> source_file;
 	Error err;
