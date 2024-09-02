@@ -58,7 +58,7 @@ public:
 protected:
 	real_t params[PARAM_MAX];
 	bool flags[FLAG_MAX];
-	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
+	virtual void _configure_joint(RID p_joint, PhysicsBody3D *p_body_a, PhysicsBody3D *p_body_b) override;
 	static void _bind_methods();
 
 public:

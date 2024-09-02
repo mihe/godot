@@ -74,6 +74,11 @@ public:
 
 #include "servers/server_wrap_mt_common.h"
 
+	virtual TypedArray<Dictionary> shape_get_property_list(RID p_shape, const StringName &p_class) const override { return TypedArray<Dictionary>(); }
+	virtual Dictionary shape_validate_property(RID p_shape, const StringName &p_class, const Dictionary &p_property) const override { return Dictionary(); }
+	virtual bool shape_set_property(RID p_shape, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return false; }
+	virtual Variant shape_get_property(RID p_shape, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
+
 	//FUNC1RID(shape,ShapeType); todo fix
 	FUNCRID(world_boundary_shape)
 	FUNCRID(separation_ray_shape)
@@ -105,6 +110,12 @@ public:
 	/* SPACE API */
 
 	FUNCRID(space);
+
+	virtual TypedArray<Dictionary> space_get_property_list(RID p_space, const StringName &p_class) const override { return TypedArray<Dictionary>(); }
+	virtual Dictionary space_validate_property(RID p_space, const StringName &p_class, const Dictionary &p_property) const override { return Dictionary(); }
+	virtual bool space_set_property(RID p_space, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return false; }
+	virtual Variant space_get_property(RID p_space, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
+
 	FUNC2(space_set_active, RID, bool);
 	FUNC1RC(bool, space_is_active, RID);
 
@@ -132,6 +143,11 @@ public:
 
 	//FUNC0RID(area);
 	FUNCRID(area);
+
+	virtual TypedArray<Dictionary> area_get_property_list(RID p_area, const StringName &p_class) const override { return TypedArray<Dictionary>(); }
+	virtual Dictionary area_validate_property(RID p_area, const StringName &p_class, const Dictionary &p_property) const override { return Dictionary(); }
+	virtual bool area_set_property(RID p_area, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return false; }
+	virtual Variant area_get_property(RID p_area, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
 
 	FUNC2(area_set_space, RID, RID);
 	FUNC1RC(RID, area_get_space, RID);
@@ -172,6 +188,11 @@ public:
 
 	//FUNC2RID(body,BodyMode,bool);
 	FUNCRID(body)
+
+	virtual TypedArray<Dictionary> body_get_property_list(RID p_body, const StringName &p_class) const override { return TypedArray<Dictionary>(); }
+	virtual Dictionary body_validate_property(RID p_body, const StringName &p_class, const Dictionary &p_property) const override { return Dictionary(); }
+	virtual bool body_set_property(RID p_body, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return false; }
+	virtual Variant body_get_property(RID p_body, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
 
 	FUNC2(body_set_space, RID, RID);
 	FUNC1RC(RID, body_get_space, RID);
@@ -274,6 +295,11 @@ public:
 
 	FUNCRID(soft_body)
 
+	virtual TypedArray<Dictionary> soft_body_get_property_list(RID p_body, const StringName &p_class) const override { return TypedArray<Dictionary>(); }
+	virtual Dictionary soft_body_validate_property(RID p_body, const StringName &p_class, const Dictionary &p_property) const override { return Dictionary(); }
+	virtual bool soft_body_set_property(RID p_body, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return false; }
+	virtual Variant soft_body_get_property(RID p_body, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
+
 	FUNC2(soft_body_update_rendering_server, RID, PhysicsServer3DRenderingServerHandler *)
 
 	FUNC2(soft_body_set_space, RID, RID)
@@ -328,6 +354,13 @@ public:
 	/* JOINT API */
 
 	FUNCRID(joint)
+
+	virtual TypedArray<Dictionary> joint_get_property_list(RID p_joint, const StringName &p_class) const override { return TypedArray<Dictionary>(); }
+	virtual Dictionary joint_validate_property(RID p_joint, const StringName &p_class, const Dictionary &p_property) const override { return Dictionary(); }
+	virtual bool joint_set_property(RID p_joint, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return false; }
+	virtual Variant joint_get_property(RID p_joint, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
+	virtual bool joint_property_can_revert(RID p_joint, const StringName &p_class, const StringName &p_property) const override { return false; }
+	virtual Variant joint_property_get_revert(RID p_joint, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
 
 	FUNC1(joint_clear, RID)
 

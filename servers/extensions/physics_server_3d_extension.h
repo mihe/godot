@@ -207,6 +207,11 @@ public:
 
 	/* SHAPE API */
 
+	EXBIND2RC(TypedArray<Dictionary>, shape_get_property_list, RID, const StringName &)
+	EXBIND3RC(Dictionary, shape_validate_property, RID, const StringName &, const Dictionary &)
+	EXBIND4R(bool, shape_set_property, RID, const StringName &, const StringName &, const Variant &)
+	EXBIND3RC(Variant, shape_get_property, RID, const StringName &, const StringName &)
+
 	EXBIND0R(RID, world_boundary_shape_create)
 	EXBIND0R(RID, separation_ray_shape_create)
 	EXBIND0R(RID, sphere_shape_create)
@@ -231,6 +236,12 @@ public:
 	/* SPACE API */
 
 	EXBIND0R(RID, space_create)
+
+	EXBIND2RC(TypedArray<Dictionary>, space_get_property_list, RID, const StringName &)
+	EXBIND3RC(Dictionary, space_validate_property, RID, const StringName &, const Dictionary &)
+	EXBIND4R(bool, space_set_property, RID, const StringName &, const StringName &, const Variant &)
+	EXBIND3RC(Variant, space_get_property, RID, const StringName &, const StringName &)
+
 	EXBIND2(space_set_active, RID, bool)
 	EXBIND1RC(bool, space_is_active, RID)
 
@@ -247,6 +258,11 @@ public:
 
 	//EXBIND0RID(area);
 	EXBIND0R(RID, area_create)
+
+	EXBIND2RC(TypedArray<Dictionary>, area_get_property_list, RID, const StringName &)
+	EXBIND3RC(Dictionary, area_validate_property, RID, const StringName &, const Dictionary &)
+	EXBIND4R(bool, area_set_property, RID, const StringName &, const StringName &, const Variant &)
+	EXBIND3RC(Variant, area_get_property, RID, const StringName &, const StringName &)
 
 	EXBIND2(area_set_space, RID, RID)
 	EXBIND1RC(RID, area_get_space, RID)
@@ -288,6 +304,11 @@ public:
 
 	//EXBIND2RID(body,BodyMode,bool);
 	EXBIND0R(RID, body_create)
+
+	EXBIND2RC(TypedArray<Dictionary>, body_get_property_list, RID, const StringName &)
+	EXBIND3RC(Dictionary, body_validate_property, RID, const StringName &, const Dictionary &)
+	EXBIND4R(bool, body_set_property, RID, const StringName &, const StringName &, const Variant &)
+	EXBIND3RC(Variant, body_get_property, RID, const StringName &, const StringName &)
 
 	EXBIND2(body_set_space, RID, RID)
 	EXBIND1RC(RID, body_get_space, RID)
@@ -407,6 +428,11 @@ public:
 
 	EXBIND0R(RID, soft_body_create)
 
+	EXBIND2RC(TypedArray<Dictionary>, soft_body_get_property_list, RID, const StringName &)
+	EXBIND3RC(Dictionary, soft_body_validate_property, RID, const StringName &, const Dictionary &)
+	EXBIND4R(bool, soft_body_set_property, RID, const StringName &, const StringName &, const Variant &)
+	EXBIND3RC(Variant, soft_body_get_property, RID, const StringName &, const StringName &)
+
 	EXBIND2(soft_body_update_rendering_server, RID, PhysicsServer3DRenderingServerHandler *)
 
 	EXBIND2(soft_body_set_space, RID, RID)
@@ -471,6 +497,13 @@ public:
 
 	EXBIND0R(RID, joint_create)
 	EXBIND1(joint_clear, RID)
+
+	EXBIND2RC(TypedArray<Dictionary>, joint_get_property_list, RID, const StringName &)
+	EXBIND3RC(Dictionary, joint_validate_property, RID, const StringName &, const Dictionary &)
+	EXBIND4R(bool, joint_set_property, RID, const StringName &, const StringName &, const Variant &)
+	EXBIND3RC(Variant, joint_get_property, RID, const StringName &, const StringName &)
+	EXBIND3RC(bool, joint_property_can_revert, RID, const StringName &, const StringName &)
+	EXBIND3RC(Variant, joint_property_get_revert, RID, const StringName &, const StringName &)
 
 	EXBIND5(joint_make_pin, RID, RID, const Vector3 &, RID, const Vector3 &)
 

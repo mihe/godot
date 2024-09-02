@@ -95,22 +95,23 @@ bool HingeJoint3D::get_flag(Flag p_flag) const {
 	return flags[p_flag];
 }
 
-void HingeJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
+void HingeJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *p_body_a, PhysicsBody3D *p_body_b) {
 	Transform3D gt = get_global_transform();
-	Transform3D ainv = body_a->get_global_transform().affine_inverse();
+	Transform3D ainv = p_body_a->get_global_transform().affine_inverse();
 
 	Transform3D local_a = ainv * gt;
 	local_a.orthonormalize();
 	Transform3D local_b = gt;
 
-	if (body_b) {
-		Transform3D binv = body_b->get_global_transform().affine_inverse();
+	if (p_body_b) {
+		Transform3D binv = p_body_b->get_global_transform().affine_inverse();
 		local_b = binv * gt;
 	}
 
 	local_b.orthonormalize();
 
-	PhysicsServer3D::get_singleton()->joint_make_hinge(p_joint, body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+	PhysicsServer3D::get_singleton()->joint_make_hinge(p_joint, p_body_a->get_rid(), local_a, p_body_b ? p_body_b->get_rid() : RID(), local_b);
+
 	for (int i = 0; i < PARAM_MAX; i++) {
 		PhysicsServer3D::get_singleton()->hinge_joint_set_param(p_joint, PhysicsServer3D::HingeJointParam(i), params[i]);
 	}
@@ -118,6 +119,8 @@ void HingeJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsB
 		set_flag(Flag(i), flags[i]);
 		PhysicsServer3D::get_singleton()->hinge_joint_set_flag(p_joint, PhysicsServer3D::HingeJointFlag(i), flags[i]);
 	}
+
+	Joint3D::_configure_joint(p_joint, p_body_a, p_body_b);
 }
 
 HingeJoint3D::HingeJoint3D() {

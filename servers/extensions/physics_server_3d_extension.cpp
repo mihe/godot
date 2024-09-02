@@ -131,6 +131,11 @@ bool PhysicsServer3DExtension::body_test_motion_is_excluding_object(ObjectID p_o
 void PhysicsServer3DExtension::_bind_methods() {
 	/* SHAPE API */
 
+	GDVIRTUAL_BIND(_shape_get_property_list, "shape", "class");
+	GDVIRTUAL_BIND(_shape_validate_property, "shape", "class", "property");
+	GDVIRTUAL_BIND(_shape_set_property, "shape", "class", "property", "value");
+	GDVIRTUAL_BIND(_shape_get_property, "shape", "class", "property");
+
 	GDVIRTUAL_BIND(_world_boundary_shape_create);
 	GDVIRTUAL_BIND(_separation_ray_shape_create);
 	GDVIRTUAL_BIND(_sphere_shape_create);
@@ -155,6 +160,12 @@ void PhysicsServer3DExtension::_bind_methods() {
 	/* SPACE API */
 
 	GDVIRTUAL_BIND(_space_create);
+
+	GDVIRTUAL_BIND(_space_get_property_list, "space", "class");
+	GDVIRTUAL_BIND(_space_validate_property, "space", "class", "property");
+	GDVIRTUAL_BIND(_space_set_property, "space", "class", "property", "value");
+	GDVIRTUAL_BIND(_space_get_property, "space", "class", "property");
+
 	GDVIRTUAL_BIND(_space_set_active, "space", "active");
 	GDVIRTUAL_BIND(_space_is_active, "space");
 
@@ -170,6 +181,11 @@ void PhysicsServer3DExtension::_bind_methods() {
 	/* AREA API */
 
 	GDVIRTUAL_BIND(_area_create);
+
+	GDVIRTUAL_BIND(_area_get_property_list, "area", "class");
+	GDVIRTUAL_BIND(_area_validate_property, "area", "class", "property");
+	GDVIRTUAL_BIND(_area_set_property, "area", "class", "property", "value");
+	GDVIRTUAL_BIND(_area_get_property, "area", "class", "property");
 
 	GDVIRTUAL_BIND(_area_set_space, "area", "space");
 	GDVIRTUAL_BIND(_area_get_space, "area");
@@ -213,6 +229,11 @@ void PhysicsServer3DExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_test_motion_is_excluding_object", "object"), &PhysicsServer3DExtension::body_test_motion_is_excluding_object);
 
 	GDVIRTUAL_BIND(_body_create);
+
+	GDVIRTUAL_BIND(_body_get_property_list, "body", "class");
+	GDVIRTUAL_BIND(_body_validate_property, "body", "class", "property");
+	GDVIRTUAL_BIND(_body_set_property, "body", "class", "property", "value");
+	GDVIRTUAL_BIND(_body_get_property, "body", "class", "property");
 
 	GDVIRTUAL_BIND(_body_set_space, "body", "space");
 	GDVIRTUAL_BIND(_body_get_space, "body");
@@ -307,6 +328,11 @@ void PhysicsServer3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_soft_body_create);
 
+	GDVIRTUAL_BIND(_soft_body_get_property_list, "body", "class");
+	GDVIRTUAL_BIND(_soft_body_validate_property, "body", "class", "property");
+	GDVIRTUAL_BIND(_soft_body_set_property, "body", "class", "property", "value");
+	GDVIRTUAL_BIND(_soft_body_get_property, "body", "class", "property");
+
 	GDVIRTUAL_BIND(_soft_body_update_rendering_server, "body", "rendering_server_handler");
 
 	GDVIRTUAL_BIND(_soft_body_set_space, "body", "space");
@@ -362,6 +388,13 @@ void PhysicsServer3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_joint_create);
 	GDVIRTUAL_BIND(_joint_clear, "joint");
+
+	GDVIRTUAL_BIND(_joint_get_property_list, "joint", "class");
+	GDVIRTUAL_BIND(_joint_validate_property, "joint", "class", "property");
+	GDVIRTUAL_BIND(_joint_set_property, "joint", "class", "property", "value");
+	GDVIRTUAL_BIND(_joint_get_property, "joint", "class", "property");
+	GDVIRTUAL_BIND(_joint_property_can_revert, "joint", "class", "property");
+	GDVIRTUAL_BIND(_joint_property_get_revert, "joint", "class", "property");
 
 	GDVIRTUAL_BIND(_joint_make_pin, "joint", "body_A", "local_A", "body_B", "local_B");
 

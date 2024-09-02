@@ -259,6 +259,11 @@ public:
 
 	RID shape_create(ShapeType p_shape);
 
+	virtual TypedArray<Dictionary> shape_get_property_list(RID p_shape, const StringName &p_class) const = 0;
+	virtual Dictionary shape_validate_property(RID p_shape, const StringName &p_class, const Dictionary &p_property) const = 0;
+	virtual bool shape_set_property(RID p_shape, const StringName &p_class, const StringName &p_property, const Variant &p_value) = 0;
+	virtual Variant shape_get_property(RID p_shape, const StringName &p_class, const StringName &p_property) const = 0;
+
 	virtual RID world_boundary_shape_create() = 0;
 	virtual RID separation_ray_shape_create() = 0;
 	virtual RID sphere_shape_create() = 0;
@@ -284,6 +289,12 @@ public:
 	/* SPACE API */
 
 	virtual RID space_create() = 0;
+
+	virtual TypedArray<Dictionary> space_get_property_list(RID p_space, const StringName &p_class) const = 0;
+	virtual Dictionary space_validate_property(RID p_space, const StringName &p_class, const Dictionary &p_property) const = 0;
+	virtual bool space_set_property(RID p_space, const StringName &p_class, const StringName &p_property, const Variant &p_value) = 0;
+	virtual Variant space_get_property(RID p_space, const StringName &p_class, const StringName &p_property) const = 0;
+
 	virtual void space_set_active(RID p_space, bool p_active) = 0;
 	virtual bool space_is_active(RID p_space) const = 0;
 
@@ -332,6 +343,11 @@ public:
 	};
 
 	virtual RID area_create() = 0;
+
+	virtual TypedArray<Dictionary> area_get_property_list(RID p_area, const StringName &p_class) const = 0;
+	virtual Dictionary area_validate_property(RID p_area, const StringName &p_class, const Dictionary &p_property) const = 0;
+	virtual bool area_set_property(RID p_area, const StringName &p_class, const StringName &p_property, const Variant &p_value) = 0;
+	virtual Variant area_get_property(RID p_area, const StringName &p_class, const StringName &p_property) const = 0;
 
 	virtual void area_set_space(RID p_area, RID p_space) = 0;
 	virtual RID area_get_space(RID p_area) const = 0;
@@ -396,6 +412,11 @@ public:
 	};
 
 	virtual RID body_create() = 0;
+
+	virtual TypedArray<Dictionary> body_get_property_list(RID p_body, const StringName &p_class) const = 0;
+	virtual Dictionary body_validate_property(RID p_body, const StringName &p_class, const Dictionary &p_property) const = 0;
+	virtual bool body_set_property(RID p_body, const StringName &p_class, const StringName &p_property, const Variant &p_value) = 0;
+	virtual Variant body_get_property(RID p_body, const StringName &p_class, const StringName &p_property) const = 0;
 
 	virtual void body_set_space(RID p_body, RID p_space) = 0;
 	virtual RID body_get_space(RID p_body) const = 0;
@@ -573,6 +594,11 @@ public:
 
 	virtual RID soft_body_create() = 0;
 
+	virtual TypedArray<Dictionary> soft_body_get_property_list(RID p_body, const StringName &p_class) const = 0;
+	virtual Dictionary soft_body_validate_property(RID p_body, const StringName &p_class, const Dictionary &p_property) const = 0;
+	virtual bool soft_body_set_property(RID p_body, const StringName &p_class, const StringName &p_property, const Variant &p_value) = 0;
+	virtual Variant soft_body_get_property(RID p_body, const StringName &p_class, const StringName &p_property) const = 0;
+
 	virtual void soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) = 0;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) = 0;
@@ -639,6 +665,13 @@ public:
 	virtual RID joint_create() = 0;
 
 	virtual void joint_clear(RID p_joint) = 0;
+
+	virtual TypedArray<Dictionary> joint_get_property_list(RID p_joint, const StringName &p_class) const = 0;
+	virtual Dictionary joint_validate_property(RID p_joint, const StringName &p_class, const Dictionary &p_property) const = 0;
+	virtual bool joint_set_property(RID p_joint, const StringName &p_class, const StringName &p_property, const Variant &p_value) = 0;
+	virtual Variant joint_get_property(RID p_joint, const StringName &p_class, const StringName &p_property) const = 0;
+	virtual bool joint_property_can_revert(RID p_joint, const StringName &p_class, const StringName &p_property) const = 0;
+	virtual Variant joint_property_get_revert(RID p_joint, const StringName &p_class, const StringName &p_property) const = 0;
 
 	virtual JointType joint_get_type(RID p_joint) const = 0;
 

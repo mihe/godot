@@ -44,6 +44,22 @@
 #define FLUSH_QUERY_CHECK(m_object) \
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
 
+TypedArray<Dictionary> GodotPhysicsServer3D::shape_get_property_list(RID p_shape, const StringName &p_class) const {
+	return TypedArray<Dictionary>();
+}
+
+Dictionary GodotPhysicsServer3D::shape_validate_property(RID p_shape, const StringName &p_class, const Dictionary &p_property) const {
+	return Dictionary();
+}
+
+bool GodotPhysicsServer3D::shape_set_property(RID p_shape, const StringName &p_class, const StringName &p_property, const Variant &p_value) {
+	return false;
+}
+
+Variant GodotPhysicsServer3D::shape_get_property(RID p_shape, const StringName &p_class, const StringName &p_property) const {
+	return Variant();
+}
+
 RID GodotPhysicsServer3D::world_boundary_shape_create() {
 	GodotShape3D *shape = memnew(GodotWorldBoundaryShape3D);
 	RID rid = shape_owner.make_rid(shape);
@@ -156,7 +172,23 @@ RID GodotPhysicsServer3D::space_create() {
 	space->set_static_global_body(sgb);
 
 	return id;
-};
+}
+
+TypedArray<Dictionary> GodotPhysicsServer3D::space_get_property_list(RID p_space, const StringName &p_class) const {
+	return TypedArray<Dictionary>();
+}
+
+Dictionary GodotPhysicsServer3D::space_validate_property(RID p_space, const StringName &p_class, const Dictionary &p_property) const {
+	return Dictionary();
+}
+
+bool GodotPhysicsServer3D::space_set_property(RID p_space, const StringName &p_class, const StringName &p_property, const Variant &p_value) {
+	return false;
+}
+
+Variant GodotPhysicsServer3D::space_get_property(RID p_space, const StringName &p_class, const StringName &p_property) const {
+	return Variant();
+}
 
 void GodotPhysicsServer3D::space_set_active(RID p_space, bool p_active) {
 	GodotSpace3D *space = space_owner.get_or_null(p_space);
@@ -219,6 +251,22 @@ RID GodotPhysicsServer3D::area_create() {
 	RID rid = area_owner.make_rid(area);
 	area->set_self(rid);
 	return rid;
+}
+
+TypedArray<Dictionary> GodotPhysicsServer3D::area_get_property_list(RID p_area, const StringName &p_class) const {
+	return TypedArray<Dictionary>();
+}
+
+Dictionary GodotPhysicsServer3D::area_validate_property(RID p_area, const StringName &p_class, const Dictionary &p_property) const {
+	return Dictionary();
+}
+
+bool GodotPhysicsServer3D::area_set_property(RID p_area, const StringName &p_class, const StringName &p_property, const Variant &p_value) {
+	return false;
+}
+
+Variant GodotPhysicsServer3D::area_get_property(RID p_area, const StringName &p_class, const StringName &p_property) const {
+	return Variant();
 }
 
 void GodotPhysicsServer3D::area_set_space(RID p_area, RID p_space) {
@@ -444,7 +492,23 @@ RID GodotPhysicsServer3D::body_create() {
 	RID rid = body_owner.make_rid(body);
 	body->set_self(rid);
 	return rid;
-};
+}
+
+TypedArray<Dictionary> GodotPhysicsServer3D::body_get_property_list(RID p_body, const StringName &p_class) const {
+	return TypedArray<Dictionary>();
+}
+
+Dictionary GodotPhysicsServer3D::body_validate_property(RID p_body, const StringName &p_class, const Dictionary &p_property) const {
+	return Dictionary();
+}
+
+bool GodotPhysicsServer3D::body_set_property(RID p_body, const StringName &p_class, const StringName &p_property, const Variant &p_value) {
+	return false;
+}
+
+Variant GodotPhysicsServer3D::body_get_property(RID p_body, const StringName &p_class, const StringName &p_property) const {
+	return Variant();
+}
 
 void GodotPhysicsServer3D::body_set_space(RID p_body, RID p_space) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
@@ -948,6 +1012,22 @@ RID GodotPhysicsServer3D::soft_body_create() {
 	return rid;
 }
 
+TypedArray<Dictionary> GodotPhysicsServer3D::soft_body_get_property_list(RID p_body, const StringName &p_class) const {
+	return TypedArray<Dictionary>();
+}
+
+Dictionary GodotPhysicsServer3D::soft_body_validate_property(RID p_body, const StringName &p_class, const Dictionary &p_property) const {
+	return Dictionary();
+}
+
+bool GodotPhysicsServer3D::soft_body_set_property(RID p_body, const StringName &p_class, const StringName &p_property, const Variant &p_value) {
+	return false;
+}
+
+Variant GodotPhysicsServer3D::soft_body_get_property(RID p_body, const StringName &p_class, const StringName &p_property) const {
+	return Variant();
+}
+
 void GodotPhysicsServer3D::soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);
@@ -1206,6 +1286,30 @@ RID GodotPhysicsServer3D::joint_create() {
 	RID rid = joint_owner.make_rid(joint);
 	joint->set_self(rid);
 	return rid;
+}
+
+TypedArray<Dictionary> GodotPhysicsServer3D::joint_get_property_list(RID p_joint, const StringName &p_class) const {
+	return TypedArray<Dictionary>();
+}
+
+Dictionary GodotPhysicsServer3D::joint_validate_property(RID p_joint, const StringName &p_class, const Dictionary &p_property) const {
+	return Dictionary();
+}
+
+bool GodotPhysicsServer3D::joint_set_property(RID p_joint, const StringName &p_class, const StringName &p_property, const Variant &p_value) {
+	return false;
+}
+
+Variant GodotPhysicsServer3D::joint_get_property(RID p_joint, const StringName &p_class, const StringName &p_property) const {
+	return Variant();
+}
+
+bool GodotPhysicsServer3D::joint_property_can_revert(RID p_joint, const StringName &p_class, const StringName &p_property) const {
+	return false;
+}
+
+Variant GodotPhysicsServer3D::joint_property_get_revert(RID p_joint, const StringName &p_class, const StringName &p_property) const {
+	return Variant();
 }
 
 void GodotPhysicsServer3D::joint_clear(RID p_joint) {

@@ -49,14 +49,23 @@ class Joint3D : public Node3D {
 	String warning;
 	bool configured = false;
 
+	HashMap<StringName, Variant> server_property_values;
+
 protected:
+	bool _set(const StringName &p_name, const Variant &p_property);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &r_property) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
 	void _disconnect_signals();
 	void _body_exit_tree();
 	void _update_joint(bool p_only_free = false);
 
 	void _notification(int p_what);
 
-	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) = 0;
+	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b);
 
 	static void _bind_methods();
 

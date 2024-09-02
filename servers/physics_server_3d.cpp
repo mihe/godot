@@ -900,6 +900,13 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("joint_create"), &PhysicsServer3D::joint_create);
 	ClassDB::bind_method(D_METHOD("joint_clear", "joint"), &PhysicsServer3D::joint_clear);
 
+	ClassDB::bind_method(D_METHOD("joint_get_property_list", "joint", "class"), &PhysicsServer3D::joint_get_property_list);
+	ClassDB::bind_method(D_METHOD("joint_validate_property", "joint", "class", "property"), &PhysicsServer3D::joint_validate_property);
+	ClassDB::bind_method(D_METHOD("joint_set_property", "joint", "class", "property", "value"), &PhysicsServer3D::joint_set_property);
+	ClassDB::bind_method(D_METHOD("joint_get_property", "joint", "class", "property"), &PhysicsServer3D::joint_get_property);
+	ClassDB::bind_method(D_METHOD("joint_property_can_revert", "joint", "class", "property"), &PhysicsServer3D::joint_property_can_revert);
+	ClassDB::bind_method(D_METHOD("joint_property_get_revert", "joint", "class", "property"), &PhysicsServer3D::joint_property_get_revert);
+
 	BIND_ENUM_CONSTANT(JOINT_TYPE_PIN);
 	BIND_ENUM_CONSTANT(JOINT_TYPE_HINGE);
 	BIND_ENUM_CONSTANT(JOINT_TYPE_SLIDER);
