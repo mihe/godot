@@ -160,7 +160,7 @@ void run_test(String file_name, AudioStreamWAV::Format data_format, bool stereo,
 			options_map[E.option.name] = E.default_value;
 		}
 
-		REQUIRE(wav_importer->import(save_path, save_path, options_map, nullptr) == OK);
+		REQUIRE(wav_importer->import(0, save_path, save_path, options_map, nullptr) == OK);
 
 		String load_path = save_path + "." + wav_importer->get_save_extension();
 		Ref<AudioStreamWAV> loaded_stream = ResourceLoader::load(load_path, "AudioStreamWAV", ResourceFormatImporter::CACHE_MODE_IGNORE, &error);
