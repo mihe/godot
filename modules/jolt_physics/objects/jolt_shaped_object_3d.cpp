@@ -32,7 +32,6 @@
 
 #include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
-#include "../shapes/jolt_custom_double_sided_shape.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "../spaces/jolt_space_3d.h"
 
@@ -307,7 +306,16 @@ void JoltShapedObject3D::commit_shapes(bool p_optimize_compound) {
 	previous_jolt_shape = jolt_shape;
 	jolt_shape = new_shape;
 
-	space->get_body_iface().SetShape(jolt_body->GetID(), jolt_shape, false, JPH::EActivation::DontActivate);
+	JPH::BodyInterface &iface = space->get_body_iface();
+
+	if (uses_shape_materials()) {
+		// This body/area uses per-shape physics materials, manifold reduction is not safe (can merge shapes with different materials).
+		iface.SetUseManifoldReduction(jolt_body->GetID(), false);
+	} else if (!reports_contacts()) {
+		iface.SetUseManifoldReduction(jolt_body->GetID(), true);
+	}
+
+	iface.SetShape(jolt_body->GetID(), jolt_shape, false, JPH::EActivation::DontActivate);
 
 	_enqueue_shapes_changed();
 
@@ -344,6 +352,12 @@ void JoltShapedObject3D::remove_shape(const JoltShape3D *p_shape) {
 void JoltShapedObject3D::remove_shape(int p_index) {
 	ERR_FAIL_INDEX(p_index, (int)shapes.size());
 	shapes.remove_at(p_index);
+	if (shape_frictions.size() > static_cast<unsigned int>(p_index)) {
+		shape_frictions.remove_at(p_index);
+	}
+	if (shape_bounces.size() > static_cast<unsigned int>(p_index)) {
+		shape_bounces.remove_at(p_index);
+	}
 
 	_shapes_changed();
 }
@@ -355,6 +369,7 @@ JoltShape3D *JoltShapedObject3D::get_shape(int p_index) const {
 
 void JoltShapedObject3D::set_shape(int p_index, JoltShape3D *p_shape) {
 	ERR_FAIL_INDEX(p_index, (int)shapes.size());
+
 	shapes[p_index] = JoltShapeInstance3D(this, p_shape);
 
 	_shapes_changed();
@@ -450,4 +465,68 @@ void JoltShapedObject3D::set_shape_disabled(int p_index, bool p_disabled) {
 	}
 
 	_shapes_changed();
+}
+
+real_t JoltShapedObject3D::get_shape_friction(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), NAN);
+
+	if (static_cast<unsigned int>(p_index) >= shape_frictions.size()) {
+		return NAN;
+	}
+
+	return shape_frictions[p_index];
+}
+
+void JoltShapedObject3D::set_shape_friction(int p_index, real_t p_friction) {
+	ERR_FAIL_INDEX(p_index, (int)shapes.size());
+
+	int old_size = shape_frictions.size();
+	if (old_size <= p_index) {
+		shape_frictions.resize(p_index + 1);
+
+		for (int i = old_size; i < p_index; i++) {
+			shape_frictions[i] = NAN;
+		}
+	}
+
+	shape_frictions[p_index] = p_friction;
+}
+
+real_t JoltShapedObject3D::get_shape_bounce(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), NAN);
+
+	if (static_cast<unsigned int>(p_index) >= shape_bounces.size()) {
+		return NAN;
+	}
+
+	return shape_bounces[p_index];
+}
+
+void JoltShapedObject3D::set_shape_bounce(int p_index, real_t p_bounce) {
+	ERR_FAIL_INDEX(p_index, (int)shapes.size());
+
+	int old_size = shape_bounces.size();
+	if (old_size <= p_index) {
+		shape_bounces.resize(p_index + 1);
+
+		for (int i = old_size; i < p_index; i++) {
+			shape_bounces[i] = NAN;
+		}
+	}
+
+	shape_bounces[p_index] = p_bounce;
+}
+
+bool JoltShapedObject3D::uses_shape_materials() const {
+	for (const real_t &friction : shape_frictions) {
+		if (!Math::is_nan(friction)) {
+			return true;
+		}
+	}
+	for (const real_t &bounce : shape_bounces) {
+		if (!Math::is_nan(bounce)) {
+			return true;
+		}
+	}
+	return false;
 }

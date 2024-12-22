@@ -150,11 +150,11 @@ JPH::ShapeRefC JoltHeightMapShape3D::_build_mesh() const {
 			const int index_upper_left = (z + 1) * width + (x + 1);
 
 			if (!_is_triangle_hole(vertices, index_lower_right, index_upper_right, index_lower_left)) {
-				indices.emplace_back(index_lower_right, index_upper_right, index_lower_left);
+				indices.emplace_back(index_lower_right, index_upper_right, index_lower_left, 0);
 			}
 
 			if (!_is_triangle_hole(vertices, index_lower_left, index_upper_right, index_upper_left)) {
-				indices.emplace_back(index_lower_left, index_upper_right, index_upper_left);
+				indices.emplace_back(index_lower_left, index_upper_right, index_upper_left, 0);
 			}
 		}
 	}

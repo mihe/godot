@@ -53,6 +53,9 @@ protected:
 
 	JPH::BodyCreationSettings *jolt_settings = new JPH::BodyCreationSettings();
 
+	LocalVector<real_t> shape_frictions;
+	LocalVector<real_t> shape_bounces;
+
 	virtual JPH::EMotionType _get_motion_type() const = 0;
 
 	bool _is_big() const;
@@ -127,4 +130,12 @@ public:
 
 	bool is_shape_disabled(int p_index) const;
 	void set_shape_disabled(int p_index, bool p_disabled);
+
+	real_t get_shape_friction(int p_index) const;
+	void set_shape_friction(int p_index, real_t p_friction);
+
+	real_t get_shape_bounce(int p_index) const;
+	void set_shape_bounce(int p_index, real_t p_bounce);
+
+	bool uses_shape_materials() const;
 };
