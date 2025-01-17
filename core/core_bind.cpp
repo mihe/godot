@@ -210,7 +210,7 @@ void ResourceSaver::_bind_methods() {
 	BIND_BITFIELD_FLAG(FLAG_REPLACE_SUBRESOURCE_PATHS);
 }
 
-////// LOGGER ///////
+////// Logger ///////
 
 void Logger::_bind_methods() {
 	GDVIRTUAL_BIND(_log_error, "function", "file", "line", "code", "rationale", "editor_notify", "error_type", "script_backtrace");
@@ -227,6 +227,55 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 
 void Logger::log_message(const String &p_text, bool p_error) {
 	GDVIRTUAL_CALL(_log_message, p_text, p_error);
+}
+
+////// NativeBacktrace ///////
+
+void NativeBacktrace::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("symbolicate", "include_location"), &NativeBacktrace::symbolicate);
+	ClassDB::bind_method(D_METHOD("get_frame_count"), &NativeBacktrace::get_frame_count);
+	ClassDB::bind_method(D_METHOD("get_frame_address", "index"), &NativeBacktrace::get_frame_address);
+	ClassDB::bind_method(D_METHOD("get_frame_symbol", "index"), &NativeBacktrace::get_frame_symbol);
+	ClassDB::bind_method(D_METHOD("get_frame_file", "index"), &NativeBacktrace::get_frame_file);
+	ClassDB::bind_method(D_METHOD("get_frame_line", "index"), &NativeBacktrace::get_frame_line);
+	ClassDB::bind_method(D_METHOD("get_frame_binary", "index"), &NativeBacktrace::get_frame_binary);
+}
+
+Error NativeBacktrace::symbolicate(bool p_include_location) {
+	return ::OS::get_singleton()->symbolicate_backtrace(stack_frames, p_include_location);
+}
+
+int NativeBacktrace::get_frame_count() const {
+	return stack_frames.size();
+}
+
+String NativeBacktrace::get_frame_address(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, stack_frames.size(), String());
+	return "0x" + String::num_uint64((uint64_t)stack_frames[p_index].address, 16);
+}
+
+String NativeBacktrace::get_frame_symbol(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, stack_frames.size(), String());
+	return stack_frames[p_index].symbol;
+}
+
+String NativeBacktrace::get_frame_file(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, stack_frames.size(), String());
+	return stack_frames[p_index].file;
+}
+
+int NativeBacktrace::get_frame_line(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, stack_frames.size(), -1);
+	return stack_frames[p_index].line;
+}
+
+String NativeBacktrace::get_frame_binary(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, stack_frames.size(), String());
+	return stack_frames[p_index].binary;
+}
+
+NativeBacktrace::NativeBacktrace(const Vector<::OS::StackFrame> &p_stack_frames) :
+		stack_frames(p_stack_frames) {
 }
 
 ////// OS //////
@@ -285,6 +334,10 @@ void OS::close_midi_inputs() {
 
 void OS::set_use_file_access_save_and_swap(bool p_enable) {
 	FileAccess::set_backup_save(p_enable);
+}
+
+Ref<NativeBacktrace> OS::get_backtrace() const {
+	return memnew(NativeBacktrace(::OS::get_singleton()->get_backtrace()));
 }
 
 void OS::set_low_processor_usage_mode(bool p_enabled) {
@@ -766,6 +819,8 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_debug_build"), &OS::is_debug_build);
 
+	ClassDB::bind_method(D_METHOD("get_backtrace"), &OS::get_backtrace);
+
 	ClassDB::bind_method(D_METHOD("get_static_memory_usage"), &OS::get_static_memory_usage);
 	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &OS::get_static_memory_peak_usage);
 	ClassDB::bind_method(D_METHOD("get_memory_info"), &OS::get_memory_info);
@@ -835,6 +890,10 @@ OS::OS() {
 }
 
 OS::~OS() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+
 	if (logger_bind) {
 		logger_bind->clear();
 	}

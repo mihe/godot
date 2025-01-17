@@ -1057,7 +1057,6 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	const char *cyan = tty ? "\E[0;96m" : "";
 	const char *cyan_bold = tty ? "\E[1;36m" : "";
 	const char *blue = tty ? "\E[0;94m" : "";
-	//const char *blue_bold = tty ? "\E[1;34m" : "";
 	const char *reset = tty ? "\E[0m" : "";
 
 	switch (p_type) {

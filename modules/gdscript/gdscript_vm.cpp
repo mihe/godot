@@ -623,8 +623,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 
-	GDScriptLanguage::CallLevel call_level;
-	GDScriptLanguage::get_singleton()->enter_function(&call_level, p_instance, this, stack, &ip, &line);
+	GDScriptLanguage::get_singleton()->enter_function(p_instance, this, stack, &ip, &line);
 
 #define GD_ERR_BREAK(m_cond)                                                                                           \
 	{                                                                                                                  \
