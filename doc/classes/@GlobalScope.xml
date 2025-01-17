@@ -473,6 +473,11 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_script_backtrace">
+			<return type="Array" />
+			<description>
+			</description>
+		</method>
 		<method name="hash">
 			<return type="int" />
 			<param index="0" name="variable" type="Variant" />
@@ -1158,12 +1163,6 @@
 			<description>
 				Rounds [param x] to the nearest whole number, with halfway cases rounded away from 0.
 				A type-safe version of [method round], returning an [int].
-			</description>
-		</method>
-		<method name="script_backtrace">
-			<return type="String" />
-			<description>
-				Returns a multiple line text with the current call stack information of running scripts.
 			</description>
 		</method>
 		<method name="seed">

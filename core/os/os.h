@@ -263,6 +263,18 @@ public:
 	virtual bool is_disable_crash_handler() const { return false; }
 	virtual void initialize_debugging() {}
 
+	struct StackFrame {
+		String symbol;
+		String file;
+		String binary;
+		void *address = nullptr;
+		int line = -1;
+	};
+
+	virtual Vector<StackFrame> get_backtrace() { return Vector<StackFrame>(); }
+	virtual Error symbolicate_backtrace(Vector<StackFrame> &p_backtrace, bool p_include_location) { return ERR_UNAVAILABLE; }
+	virtual String stringify_backtrace(const Vector<StackFrame> &p_backtrace) { return String(); }
+
 	virtual uint64_t get_static_memory_usage() const;
 	virtual uint64_t get_static_memory_peak_usage() const;
 	virtual Dictionary get_memory_info() const;

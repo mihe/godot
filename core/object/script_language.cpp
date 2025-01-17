@@ -518,16 +518,33 @@ void ScriptServer::save_global_classes() {
 	ProjectSettings::get_singleton()->store_global_class_list(gcarr);
 }
 
-String ScriptServer::get_current_script_backtrace() {
+Array ScriptServer::get_script_backtrace() {
+	Array trace;
+	for (int i = 0; i < get_language_count(); i++) {
+		Vector<ScriptLanguage::StackInfo> stack = get_language(i)->debug_get_current_stack_info();
+		for (int j = 0; j < stack.size(); j++) {
+			Dictionary d;
+			d["file"] = stack[j].file;
+			d["function"] = stack[j].func;
+			d["line"] = stack[j].line;
+			trace.push_back(d);
+		}
+	}
+	return trace;
+}
+
+String ScriptServer::get_script_backtrace_string() {
 	String trace;
-	for (int si = 0; si < get_language_count(); si++) {
-		ScriptLanguage *sl = get_language(si);
-		Vector<ScriptLanguage::StackInfo> stack = sl->debug_get_current_stack_info();
-		if (stack.size()) {
-			trace += "stack_language: " + sl->get_name();
-			for (int i = 0; i < stack.size(); i++) {
-				trace += "\n" + itos(i) + ": " + stack[i].func + " (" + stack[i].file + " : " + itos(stack[i].line) + ")";
+	for (int i = 0; i < get_language_count(); i++) {
+		Vector<ScriptLanguage::StackInfo> stack = get_language(i)->debug_get_current_stack_info();
+		for (int j = 0; j < stack.size(); j++) {
+			const ScriptLanguage::StackInfo &level = stack[j];
+
+			if (j != 0) {
+				trace += '\n';
 			}
+
+			trace += vformat("[%d] %s (%s:%d)", j + 1, level.func, level.file, level.line);
 		}
 	}
 	return trace;

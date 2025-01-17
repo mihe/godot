@@ -91,8 +91,7 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 // Main error printing function.
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
 	if (OS::get_singleton()) {
-		String script_backtrace = ScriptServer::get_current_script_backtrace();
-		OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type, script_backtrace.utf8().get_data());
+		OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type, ScriptServer::get_script_backtrace_string().utf8().get_data());
 	} else {
 		// Fallback if errors happen before OS init or after it's destroyed.
 		const char *err_details = (p_message && *p_message) ? p_message : p_error;

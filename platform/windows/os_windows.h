@@ -246,6 +246,10 @@ public:
 	virtual bool is_disable_crash_handler() const override;
 	virtual void initialize_debugging() override;
 
+	virtual Vector<StackFrame> get_backtrace() override;
+	virtual Error symbolicate_backtrace(Vector<StackFrame> &p_backtrace, bool p_include_location) override;
+	virtual String stringify_backtrace(const Vector<StackFrame> &p_backtrace) override;
+
 	virtual Error move_to_trash(const String &p_path) override;
 
 	virtual String get_system_ca_certificates() override;

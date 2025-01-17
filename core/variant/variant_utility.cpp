@@ -1237,8 +1237,8 @@ bool VariantUtilityFunctions::is_same(const Variant &p_a, const Variant &p_b) {
 	return p_a.identity_compare(p_b);
 }
 
-String VariantUtilityFunctions::script_backtrace() {
-	return ScriptServer::get_current_script_backtrace();
+Array VariantUtilityFunctions::get_script_backtrace() {
+	return ScriptServer::get_script_backtrace();
 }
 
 #ifdef DEBUG_METHODS_ENABLED
@@ -1861,7 +1861,7 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(is_same, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
-	FUNCBINDR(script_backtrace, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(get_script_backtrace, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 }
 
 void Variant::_unregister_variant_utility_functions() {

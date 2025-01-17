@@ -228,6 +228,95 @@ void OS_Windows::initialize_debugging() {
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 }
 
+Vector<OS::StackFrame> OS_Windows::get_backtrace() {
+	Vector<StackFrame> backtrace;
+
+	void *stack_frames[60] = {};
+	int frame_count = RtlCaptureStackBackTrace(0, 60, stack_frames, NULL);
+
+	backtrace.resize(frame_count);
+
+	for (int i = 0; i < frame_count; ++i) {
+		backtrace.write[i].address = stack_frames[i];
+	}
+
+	return backtrace;
+}
+
+Error OS_Windows::symbolicate_backtrace(Vector<StackFrame> &p_backtrace, bool p_include_location) {
+	HANDLE process = GetCurrentProcess();
+	bool success = SymInitializeW(process, NULL, TRUE);
+	ERR_FAIL_COND_V_MSG(!success, FAILED, vformat("Failed to initialize process symbol handler: '%s'", format_error_message(GetLastError())));
+
+	DWORD symbol_options = SymGetOptions();
+
+	if (p_include_location) {
+		symbol_options |= SYMOPT_LOAD_LINES;
+	}
+
+	SymSetOptions(symbol_options);
+
+	Error error = OK;
+
+	for (StackFrame &stack_frame : p_backtrace) {
+		SYMBOL_INFO_PACKAGEW symbol_info = {};
+		symbol_info.si.SizeOfStruct = sizeof(symbol_info.si);
+		symbol_info.si.MaxNameLen = MAX_SYM_NAME;
+
+		success = SymFromAddrW(process, (DWORD64)stack_frame.address, nullptr, &symbol_info.si);
+		if (unlikely(!success)) {
+			error = FAILED;
+			ERR_PRINT(vformat("Failed to retrieve symbol info: '%s'", format_error_message(GetLastError())));
+			break;
+		}
+
+		stack_frame.symbol = String::utf16((const char16_t *)&symbol_info.si.Name, symbol_info.si.NameLen);
+	}
+
+	if (p_include_location) {
+		for (StackFrame &stack_frame : p_backtrace) {
+			DWORD displacement = 0;
+			IMAGEHLP_LINEW64 symbol_location = {};
+			symbol_location.SizeOfStruct = sizeof(symbol_location);
+
+			success = SymGetLineFromAddrW(process, (DWORD64)stack_frame.address, &displacement, &symbol_location);
+			if (unlikely(!success)) {
+				if (GetLastError() == ERROR_INVALID_ADDRESS) {
+					// This error is returned when we have no symbol information for the address, which is fine.
+					continue;
+				} else {
+					error = FAILED;
+					ERR_PRINT(vformat("Failed to retrieve symbol line info: '%s'", format_error_message(GetLastError())));
+					break;
+				}
+			}
+
+			stack_frame.file = String::utf16((const char16_t *)symbol_location.FileName);
+			stack_frame.line = (int)symbol_location.LineNumber;
+
+			IMAGEHLP_MODULEW64 symbol_module = {};
+			symbol_module.SizeOfStruct = sizeof(symbol_module);
+
+			success = SymGetModuleInfoW(process, (DWORD64)stack_frame.address, &symbol_module);
+			if (unlikely(!success)) {
+				ERR_PRINT(vformat("Failed to retrieve symbol module info: '%s'", format_error_message(GetLastError())));
+				break;
+			}
+
+			stack_frame.binary = String::utf16((const char16_t *)symbol_module.ImageName);
+		}
+	}
+
+	success = SymCleanup(process);
+	ERR_FAIL_COND_V_MSG(!success, FAILED, vformat("Failed to clean up process symbol handler: '%s'", format_error_message(GetLastError())));
+
+	return error;
+}
+
+String OS_Windows::stringify_backtrace(const Vector<StackFrame> &p_backtrace) {
+	return String();
+}
+
 #ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
 static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	String err_str;

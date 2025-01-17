@@ -141,6 +141,28 @@ public:
 	virtual void log_message(const String &p_text, bool p_error);
 };
 
+class NativeBacktrace : public RefCounted {
+	GDCLASS(NativeBacktrace, RefCounted);
+
+protected:
+	static void _bind_methods();
+
+	Vector<OS::StackFrame> stack_frames;
+
+public:
+	Error symbolicate(bool p_include_location);
+
+	int get_frame_count() const;
+	String get_frame_address(int p_index) const;
+	String get_frame_symbol(int p_index) const;
+	String get_frame_file(int p_index) const;
+	int get_frame_line(int p_index) const;
+	String get_frame_binary(int p_index) const;
+
+	NativeBacktrace() = default;
+	NativeBacktrace(const Vector<OS::StackFrame> &p_stack_frames);
+};
+
 class OS : public Object {
 	GDCLASS(OS, Object);
 
@@ -267,6 +289,8 @@ public:
 	Key find_keycode_from_string(const String &p_code) const;
 
 	void set_use_file_access_save_and_swap(bool p_enable);
+
+	Ref<NativeBacktrace> get_backtrace() const;
 
 	uint64_t get_static_memory_usage() const;
 	uint64_t get_static_memory_peak_usage() const;
