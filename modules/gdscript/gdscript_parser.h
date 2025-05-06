@@ -1260,6 +1260,7 @@ public:
 
 		bool exported = false;
 		bool onready = false;
+		bool observable = false;
 		PropertyInfo export_info;
 		int assignments = 0;
 		bool is_static = false;
@@ -1525,6 +1526,7 @@ private:
 	static bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, AnnotationAction p_apply, const Vector<Variant> &p_default_arguments = Vector<Variant>(), bool p_is_vararg = false);
 	bool validate_annotation_arguments(AnnotationNode *p_annotation);
 	void clear_unused_annotations();
+	bool observable_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
