@@ -773,6 +773,31 @@
 				[b]Note:[/b] Unlike most other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
 			</description>
 		</annotation>
+		<annotation name="@observable">
+			<return type="void" />
+			<param index="0" name="add_initializer" type="bool" default="true" />
+			<param index="1" name="compare_values" type="bool" default="true" />
+			<description>
+				Mark the following variable as being observable, which will generate a setter that checks to see whether the variable has changed and calls [code]_on_property_changed[/code] if it has.
+				If the type of the variable extends [code]ObservableResource[/code] then the setter will also call the [code]_connect_with_owner[/code] method on the variable.
+				If [param add_initializer] is set to [code]true[/code] and the type of the variable extends [code]ObservableResource[/code] then the variable will also have a default initializer generated for it, if there isn't one already, in the form of [code]Type.new(self, "property_name")[/code].
+				If [param compare_values] is set to [code]true[/code] then [code]_on_property_changed[/code] will only be called when the value has actually changed.
+				[codeblock]
+				# This...
+				@observable var my_variable: MyObservableResource
+				# Expands into this...
+				@observable var my_variable: MyObservableResource = MyObservableResource.new(self, "my_variable"):
+				    set(new_value):
+				        if not _should_property_change("my_variable", my_variable, new_value):
+				            return
+				        var old_value: MyObservableResource = my_variable
+				        my_variable = new_value
+				        if my_variable != null:
+				            my_variable._connect_with_owner(self, "my_variable")
+				        _on_property_changed("my_variable", old_value, new_value)
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@onready">
 			<return type="void" />
 			<description>

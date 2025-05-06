@@ -92,6 +92,7 @@ bool GDScriptParser::annotation_exists(const String &p_annotation_name) const {
 GDScriptParser::GDScriptParser() {
 	// Register valid annotations.
 	if (unlikely(valid_annotations.is_empty())) {
+		register_annotation(MethodInfo("@observable", PropertyInfo(Variant::BOOL, "add_initializer"), PropertyInfo(Variant::BOOL, "compare_values")), AnnotationInfo::VARIABLE, &GDScriptParser::observable_annotation, varray(true, true));
 		// Script annotations.
 		register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
@@ -4313,6 +4314,261 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 	}
 
 	// For other annotations, see `GDScriptAnalyzer::resolve_annotation()`.
+
+	return true;
+}
+
+bool GDScriptParser::observable_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, R"("@observable" annotation can only be applied to class variables.)");
+
+	VariableNode *variable = static_cast<VariableNode *>(p_target);
+
+	if (variable->observable) {
+		push_error(R"("@observable" annotation can only be used once per variable.)", p_annotation);
+		return false;
+	}
+
+	if (variable->is_static) {
+		push_error(R"("@observable" annotation cannot be applied to a static variable.)", p_annotation);
+		return false;
+	}
+
+	if (variable->property == VariableNode::PROP_SETGET) {
+		push_error(R"("@observable" annotation can only be applied to inline properties.)", p_annotation);
+		return false;
+	}
+
+	if (variable->property == VariableNode::PROP_INLINE && variable->setter) {
+		push_error(R"("@observable" annotation cannot be applied if there's a property setter already present.)", p_annotation);
+		return false;
+	}
+
+	if (variable->datatype.type_source != DataType::ANNOTATED_EXPLICIT) {
+		push_error(R"("@observable" annotation cannot be applied to inferred or dynamically typed variables.)", p_annotation);
+		return false;
+	}
+
+	bool add_initializer = true;
+	if (p_annotation->resolved_arguments.size() > 0) {
+		add_initializer = p_annotation->resolved_arguments[0];
+	}
+
+	bool compare_values = true;
+	if (p_annotation->resolved_arguments.size() > 1) {
+		compare_values = p_annotation->resolved_arguments[1];
+	}
+
+	bool is_nested_resource = false;
+	DataType current_type = variable->datatype;
+	while (true) {
+		if (current_type.kind == DataType::CLASS) {
+			if (current_type.to_string() == SNAME("ObservableResource")) {
+				is_nested_resource = true;
+				break;
+			}
+
+			current_type = current_type.class_type->base_type;
+		} else if (current_type.kind == DataType::NATIVE) {
+			is_nested_resource = ClassDB::is_parent_class(current_type.to_string(), SNAME("ObservableResource"));
+			break;
+		} else {
+			break;
+		}
+	}
+
+	// TODO: Replace this macro with a template lambda if/when Godot gets C++20 support.
+#define alloc_observable_node(m_type) [&]() { \
+	m_type *node = alloc_node<m_type>();      \
+	reset_extents(node, p_annotation);        \
+	return node;                              \
+}()
+
+	// This annotation will effectively generate the following code:
+	//
+	//     @observable()
+	// *   var my_variable: MyObservableResource = MyObservableResource.new(self, "my_variable")
+	//         set(@new_value):
+	//             if not _should_property_change(my_variable, @new_value):
+	//                 return
+	//             var @old_value: MyObservableResource = my_variable
+	//             my_variable = @new_value
+	// *           if my_variable != null:
+	// *               my_variable._connect_with_owner(self, "my_variable")
+	//             _on_property_changed("my_variable", @old_value, @new_value)
+	//
+	// *Only applies to variables that inherit from `ObservableResource`.
+
+	// Create a helper reference for the target variable.
+
+	IdentifierNode *variable_ref = alloc_observable_node(IdentifierNode);
+	variable_ref->name = variable->identifier->name;
+	variable_ref->source = IdentifierNode::MEMBER_VARIABLE;
+	variable_ref->variable_source = variable;
+
+	// Create a helper literal for the target variable.
+
+	LiteralNode *variable_name_literal = alloc_observable_node(LiteralNode);
+	variable_name_literal->value = variable->identifier->name;
+
+	// Create the initializer if there isn't one already.
+
+	ExpressionNode *new_initializer = nullptr;
+	if (variable->initializer == nullptr && is_nested_resource && add_initializer) {
+		SubscriptNode *connect_subscript = alloc_observable_node(SubscriptNode);
+		connect_subscript->base = variable->datatype_specifier->type_chain[0];
+		connect_subscript->attribute = alloc_observable_node(IdentifierNode);
+		connect_subscript->attribute->name = SNAME("new");
+		connect_subscript->is_attribute = true;
+
+		CallNode *connect_call = alloc_observable_node(CallNode);
+		connect_call->callee = connect_subscript;
+		connect_call->function_name = connect_subscript->attribute->name;
+
+		SelfNode *self = alloc_observable_node(SelfNode);
+		self->current_class = current_class;
+
+		connect_call->arguments.push_back(self);
+		connect_call->arguments.push_back(variable_name_literal);
+
+		new_initializer = connect_call;
+	}
+
+	// Create the setter function.
+
+	FunctionNode *setter_function = alloc_observable_node(FunctionNode);
+	setter_function->identifier = alloc_observable_node(IdentifierNode);
+	setter_function->identifier->name = "@" + variable->identifier->name + "_setter";
+
+	SuiteNode *setter_body = alloc_observable_node(SuiteNode);
+	setter_function->body = setter_body;
+
+	ParameterNode *new_value_parameter = alloc_observable_node(ParameterNode);
+	new_value_parameter->identifier = alloc_observable_node(IdentifierNode);
+	new_value_parameter->identifier->name = SNAME("@new_value");
+	new_value_parameter->datatype_specifier = variable->datatype_specifier;
+	new_value_parameter->datatype = variable->datatype;
+	setter_function->parameters.push_back(new_value_parameter);
+	setter_function->parameters_indices[new_value_parameter->identifier->name] = 0;
+	setter_body->add_local(new_value_parameter, setter_function);
+
+	IdentifierNode *new_value_ref = alloc_observable_node(IdentifierNode);
+	new_value_ref->name = new_value_parameter->identifier->name;
+	new_value_ref->source = IdentifierNode::FUNCTION_PARAMETER;
+	new_value_ref->parameter_source = new_value_parameter;
+
+	// Create the setter if-statement.
+
+	if (compare_values) {
+		IdentifierNode *should_property_change_ref = alloc_observable_node(IdentifierNode);
+		should_property_change_ref->name = SNAME("_should_property_change");
+
+		CallNode *should_property_change_call = alloc_observable_node(CallNode);
+		should_property_change_call->callee = should_property_change_ref;
+		should_property_change_call->function_name = should_property_change_ref->name;
+		should_property_change_call->arguments.push_back(variable_name_literal);
+		should_property_change_call->arguments.push_back(variable_ref);
+		should_property_change_call->arguments.push_back(new_value_ref);
+
+		UnaryOpNode *not_op = alloc_observable_node(UnaryOpNode);
+		not_op->operation = UnaryOpNode::OP_LOGIC_NOT;
+		not_op->variant_op = Variant::OP_NOT;
+		not_op->operand = should_property_change_call;
+
+		IfNode *setter_if = alloc_observable_node(IfNode);
+		setter_if->condition = not_op;
+		setter_if->true_block = alloc_observable_node(SuiteNode);
+		setter_if->true_block->statements.push_back(alloc_observable_node(ReturnNode));
+
+		setter_body->statements.push_back(setter_if);
+	}
+
+	// Create variable to hold the old value.
+
+	VariableNode *old_value_variable = alloc_observable_node(VariableNode);
+	old_value_variable->identifier = alloc_observable_node(IdentifierNode);
+	old_value_variable->identifier->name = SNAME("@old_value");
+	old_value_variable->datatype_specifier = variable->datatype_specifier;
+	old_value_variable->datatype = variable->datatype;
+	old_value_variable->initializer = variable_ref;
+	old_value_variable->assignments = 1;
+
+	setter_body->add_local(old_value_variable, setter_function);
+	setter_body->statements.push_back(old_value_variable);
+
+	// Create the setter assignment.
+
+	AssignmentNode *setter_assignment = alloc_observable_node(AssignmentNode);
+	setter_assignment->assignee = variable_ref;
+	setter_assignment->assigned_value = new_value_ref;
+
+	setter_body->statements.push_back(setter_assignment);
+
+	// Create the `_connect_with_owner` call.
+
+	if (is_nested_resource) {
+		BinaryOpNode *not_equal_null = alloc_observable_node(BinaryOpNode);
+		not_equal_null->operation = BinaryOpNode::OP_COMP_NOT_EQUAL;
+		not_equal_null->variant_op = Variant::OP_NOT_EQUAL;
+		not_equal_null->left_operand = variable_ref;
+		not_equal_null->right_operand = alloc_observable_node(LiteralNode);
+
+		SubscriptNode *connect_subscript = alloc_observable_node(SubscriptNode);
+		connect_subscript->base = variable_ref;
+		connect_subscript->attribute = alloc_observable_node(IdentifierNode);
+		connect_subscript->attribute->name = SNAME("_connect_with_owner");
+		connect_subscript->is_attribute = true;
+
+		CallNode *connect_call = alloc_observable_node(CallNode);
+		connect_call->callee = connect_subscript;
+		connect_call->function_name = connect_subscript->attribute->name;
+
+		SelfNode *self = alloc_observable_node(SelfNode);
+		self->current_class = current_class;
+
+		connect_call->arguments.push_back(self);
+		connect_call->arguments.push_back(variable_name_literal);
+
+		IfNode *connect_if = alloc_observable_node(IfNode);
+		connect_if->condition = not_equal_null;
+		connect_if->true_block = alloc_observable_node(SuiteNode);
+		connect_if->true_block->statements.push_back(connect_call);
+
+		setter_body->statements.push_back(connect_if);
+	}
+
+	// Create the `_on_property_changed` call.
+
+	IdentifierNode *on_property_changed_ref = alloc_observable_node(IdentifierNode);
+	on_property_changed_ref->name = SNAME("_on_property_changed");
+
+	CallNode *on_property_changed_call = alloc_observable_node(CallNode);
+	on_property_changed_call->callee = on_property_changed_ref;
+	on_property_changed_call->function_name = on_property_changed_ref->name;
+
+	IdentifierNode *old_value_ref = alloc_observable_node(IdentifierNode);
+	old_value_ref->name = old_value_variable->identifier->name;
+	old_value_ref->source = IdentifierNode::LOCAL_VARIABLE;
+	old_value_ref->variable_source = old_value_variable;
+	old_value_variable->usages += 1;
+
+	on_property_changed_call->arguments.push_back(variable_name_literal);
+	on_property_changed_call->arguments.push_back(old_value_ref);
+	on_property_changed_call->arguments.push_back(new_value_ref);
+
+	setter_body->statements.push_back(on_property_changed_call);
+
+	// Actually modify the parse context.
+
+	if (new_initializer != nullptr) {
+		variable->initializer = new_initializer;
+		variable->assignments += 1;
+	}
+
+	variable->property = VariableNode::PROP_INLINE;
+	variable->setter = setter_function;
+	variable->setter_parameter = new_value_parameter->identifier;
+
+	variable->observable = true;
 
 	return true;
 }
