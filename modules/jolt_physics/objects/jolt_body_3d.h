@@ -103,6 +103,7 @@ private:
 	bool sleep_initially = false;
 	bool custom_center_of_mass = false;
 	bool custom_integrator = false;
+	bool shape_materials = false;
 
 	virtual JPH::BroadPhaseLayer _get_broad_phase_layer() const override;
 	virtual JPH::ObjectLayer _get_object_layer() const override;
@@ -135,6 +136,7 @@ private:
 	void _update_possible_kinematic_contacts();
 	void _update_sleep_allowed();
 	void _update_manifold_reduction();
+	void _update_uses_shape_materials();
 
 	void _destroy_joint_constraints();
 
@@ -317,5 +319,5 @@ public:
 	float get_shape_bounce(int p_index) const;
 	void set_shape_bounce(int p_index, float p_bounce);
 
-	bool uses_shape_materials() const;
+	bool uses_shape_materials() const { return shape_materials; }
 };

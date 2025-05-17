@@ -426,6 +426,24 @@ void JoltBody3D::_update_manifold_reduction() {
 	}
 }
 
+void JoltBody3D::_update_uses_shape_materials() {
+	shape_materials = false;
+
+	for (float friction : shape_frictions) {
+		if (!Math::is_nan(friction)) {
+			shape_materials = true;
+			return;
+		}
+	}
+
+	for (float bounce : shape_bounces) {
+		if (!Math::is_nan(bounce)) {
+			shape_materials = true;
+			return;
+		}
+	}
+}
+
 void JoltBody3D::_destroy_joint_constraints() {
 	for (JoltJoint3D *joint : joints) {
 		joint->destroy();
@@ -547,6 +565,7 @@ void JoltBody3D::_sleep_allowed_changed() {
 }
 
 void JoltBody3D::_shape_materials_changed() {
+	_update_uses_shape_materials();
 	_update_manifold_reduction();
 }
 
@@ -1409,20 +1428,4 @@ void JoltBody3D::set_shape_bounce(int p_index, float p_bounce) {
 	shape_bounces[p_index] = p_bounce;
 
 	_shape_materials_changed();
-}
-
-bool JoltBody3D::uses_shape_materials() const {
-	for (float friction : shape_frictions) {
-		if (!Math::is_nan(friction)) {
-			return true;
-		}
-	}
-
-	for (float bounce : shape_bounces) {
-		if (!Math::is_nan(bounce)) {
-			return true;
-		}
-	}
-
-	return false;
 }
