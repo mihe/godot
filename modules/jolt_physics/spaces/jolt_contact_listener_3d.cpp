@@ -42,12 +42,8 @@
 #include "modules/jolt_physics/shapes/jolt_shape_3d.h"
 
 void JoltContactListener3D::OnContactAdded(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
-	bool use_shape_materials = false;
-	_try_override_collision_response(p_body1, p_body2, p_settings, &use_shape_materials);
-	if (use_shape_materials) {
-		// At least one body uses per-shape materials, we need to override combined friction/bounce.
-		_override_contact_properties(p_body1, p_body2, p_manifold, p_settings);
-	}
+	_try_override_collision_response(p_body1, p_body2, p_settings);
+	_try_override_contact_properties(p_body1, p_body2, p_manifold, p_settings);
 	_try_apply_surface_velocities(p_body1, p_body2, p_settings);
 	_try_add_contacts(p_body1, p_body2, p_manifold, p_settings);
 	_try_evaluate_area_overlap(p_body1, p_body2, p_manifold);
@@ -58,11 +54,8 @@ void JoltContactListener3D::OnContactAdded(const JPH::Body &p_body1, const JPH::
 }
 
 void JoltContactListener3D::OnContactPersisted(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
-	bool use_shape_materials = false;
-	_try_override_collision_response(p_body1, p_body2, p_settings, &use_shape_materials);
-	if (use_shape_materials) {
-		_override_contact_properties(p_body1, p_body2, p_manifold, p_settings);
-	}
+	_try_override_collision_response(p_body1, p_body2, p_settings);
+	_try_override_contact_properties(p_body1, p_body2, p_manifold, p_settings);
 	_try_apply_surface_velocities(p_body1, p_body2, p_settings);
 	_try_add_contacts(p_body1, p_body2, p_manifold, p_settings);
 	_try_evaluate_area_overlap(p_body1, p_body2, p_manifold);
@@ -96,7 +89,7 @@ void JoltContactListener3D::OnSoftBodyContactAdded(const JPH::Body &p_soft_body,
 
 #endif
 
-bool JoltContactListener3D::_try_override_collision_response(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, JPH::ContactSettings &p_settings, bool *p_use_shape_materials) {
+bool JoltContactListener3D::_try_override_collision_response(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, JPH::ContactSettings &p_settings) {
 	if (p_jolt_body1.IsSensor() || p_jolt_body2.IsSensor()) {
 		return false;
 	}
@@ -107,11 +100,6 @@ bool JoltContactListener3D::_try_override_collision_response(const JPH::Body &p_
 
 	const JoltBody3D *body1 = reinterpret_cast<JoltBody3D *>(p_jolt_body1.GetUserData());
 	const JoltBody3D *body2 = reinterpret_cast<JoltBody3D *>(p_jolt_body2.GetUserData());
-
-	if (body1->uses_shape_materials() || body2->uses_shape_materials()) {
-		// This contact needs to check per-shape materials.
-		*p_use_shape_materials = true;
-	}
 
 	const bool can_collide1 = body1->can_collide_with(*body2);
 	const bool can_collide2 = body2->can_collide_with(*body1);
@@ -326,40 +314,53 @@ bool JoltContactListener3D::_try_remove_area_overlap(const JPH::SubShapeIDPair &
 	return removed;
 }
 
-void JoltContactListener3D::_override_contact_properties(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
+bool JoltContactListener3D::_try_override_contact_properties(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
+	if (p_jolt_body1.IsSensor() || p_jolt_body2.IsSensor()) {
+		return false;
+	}
+
+	if (!p_jolt_body1.IsDynamic() && !p_jolt_body2.IsDynamic()) {
+		return false;
+	}
+
 	// Get friction and bounce for both bodies using per-shape materials.
 	const JoltBody3D *body1 = reinterpret_cast<JoltBody3D *>(p_jolt_body1.GetUserData());
 	const JoltBody3D *body2 = reinterpret_cast<JoltBody3D *>(p_jolt_body2.GetUserData());
 
-	const int id1 = body1->find_shape_index(p_manifold.mSubShapeID1);
-	const int id2 = body2->find_shape_index(p_manifold.mSubShapeID2);
+	if (!body1->uses_shape_materials() && !body2->uses_shape_materials()) {
+		return false;
+	}
 
-	// `find_shape_index` returns -1 when not found, treat it the same
-	// as no override.
-	float friction1 = (id1 == -1) ? NAN : body1->get_shape_friction(id1);
+	const int shape_index1 = body1->find_shape_index(p_manifold.mSubShapeID1);
+	const int shape_index2 = body2->find_shape_index(p_manifold.mSubShapeID2);
+
+	// `find_shape_index` returns -1 when not found, treat it the same as no override.
+	float friction1 = (shape_index1 == -1) ? NAN : body1->get_shape_friction(shape_index1);
 	if (Math::is_nan(friction1)) {
 		// Per-shape friction is not set, fall back to the body's value.
 		friction1 = p_jolt_body1.GetFriction();
 	}
 
-	float bounce1 = (id1 == -1) ? NAN : body1->get_shape_bounce(id1);
+	float bounce1 = (shape_index1 == -1) ? NAN : body1->get_shape_bounce(shape_index1);
 	if (Math::is_nan(bounce1)) {
 		// Per-shape bounce is not set, fall back to the body's value.
 		bounce1 = p_jolt_body1.GetRestitution();
 	}
 
-	float friction2 = (id2 == -1) ? NAN : body2->get_shape_friction(id2);
+	float friction2 = (shape_index2 == -1) ? NAN : body2->get_shape_friction(shape_index2);
 	if (Math::is_nan(friction2)) {
 		friction2 = p_jolt_body2.GetFriction();
 	}
 
-	float bounce2 = (id2 == -1) ? NAN : body2->get_shape_bounce(id2);
+	float bounce2 = (shape_index2 == -1) ? NAN : body2->get_shape_bounce(shape_index2);
 	if (Math::is_nan(bounce2)) {
 		bounce2 = p_jolt_body2.GetRestitution();
 	}
 
 	p_settings.mCombinedFriction = Math::abs(MIN(friction1, friction2));
 	p_settings.mCombinedRestitution = CLAMP(bounce1 + bounce2, 0.0, 1.0);
+
+	return true;
 }
 
 #ifdef DEBUG_ENABLED
