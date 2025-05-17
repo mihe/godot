@@ -306,16 +306,7 @@ void JoltShapedObject3D::commit_shapes(bool p_optimize_compound) {
 	previous_jolt_shape = jolt_shape;
 	jolt_shape = new_shape;
 
-	JPH::BodyInterface &iface = space->get_body_iface();
-
-	if (uses_shape_materials()) {
-		// This body/area uses per-shape physics materials, manifold reduction is not safe (can merge shapes with different materials).
-		iface.SetUseManifoldReduction(jolt_body->GetID(), false);
-	} else if (!reports_contacts()) {
-		iface.SetUseManifoldReduction(jolt_body->GetID(), true);
-	}
-
-	iface.SetShape(jolt_body->GetID(), jolt_shape, false, JPH::EActivation::DontActivate);
+	space->get_body_iface().SetShape(jolt_body->GetID(), jolt_shape, false, JPH::EActivation::DontActivate);
 
 	_enqueue_shapes_changed();
 

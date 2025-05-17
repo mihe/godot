@@ -128,9 +128,8 @@ void JoltBody3D::_add_to_space() {
 	jolt_settings->mAllowedDOFs = _calculate_allowed_dofs();
 	jolt_settings->mAllowDynamicOrKinematic = true;
 	jolt_settings->mCollideKinematicVsNonDynamic = reports_all_kinematic_contacts();
+	jolt_settings->mUseManifoldReduction = _needs_manifold_reduction();
 	jolt_settings->mAllowSleeping = is_sleep_actually_allowed();
-	// This body uses per-shape physics materials, manifold reduction is not safe (can merge shapes with different materials).
-	jolt_settings->mUseManifoldReduction = !reports_contacts() && !uses_shape_materials();
 	jolt_settings->mLinearDamping = 0.0f;
 	jolt_settings->mAngularDamping = 0.0f;
 	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::max_linear_velocity;
@@ -417,6 +416,16 @@ void JoltBody3D::_update_sleep_allowed() {
 	}
 }
 
+void JoltBody3D::_update_manifold_reduction() {
+	const bool value = _needs_manifold_reduction();
+
+	if (!in_space()) {
+		jolt_settings->mUseManifoldReduction = value;
+	} else {
+		space->get_body_iface().SetUseManifoldReduction(jolt_body->GetID(), value);
+	}
+}
+
 void JoltBody3D::_destroy_joint_constraints() {
 	for (JoltJoint3D *joint : joints) {
 		joint->destroy();
@@ -510,6 +519,7 @@ void JoltBody3D::_axis_lock_changed() {
 void JoltBody3D::_contact_reporting_changed() {
 	_update_possible_kinematic_contacts();
 	_update_sleep_allowed();
+	_update_manifold_reduction();
 	wake_up();
 }
 
@@ -834,15 +844,6 @@ void JoltBody3D::set_max_contacts_reported(int p_count) {
 
 	contacts.resize(p_count);
 	contact_count = MIN(contact_count, p_count);
-
-	// This body uses per-shape physics materials, manifold reduction is not safe (can merge shapes with different materials).
-	const bool use_manifold_reduction = !reports_contacts() && !uses_shape_materials();
-
-	if (!in_space()) {
-		jolt_settings->mUseManifoldReduction = use_manifold_reduction;
-	} else {
-		space->get_body_iface().SetUseManifoldReduction(jolt_body->GetID(), use_manifold_reduction);
-	}
 
 	_contact_reporting_changed();
 }

@@ -107,6 +107,8 @@ private:
 
 	virtual JPH::EMotionType _get_motion_type() const override;
 
+	bool _needs_manifold_reduction() const { return !reports_contacts() && !uses_shape_materials(); }
+
 	virtual void _add_to_space() override;
 
 	bool _should_call_queries() const { return state_sync_callback.is_valid() || custom_integration_callback.is_valid(); }
@@ -130,6 +132,7 @@ private:
 	void _update_joint_constraints();
 	void _update_possible_kinematic_contacts();
 	void _update_sleep_allowed();
+	void _update_manifold_reduction();
 
 	void _destroy_joint_constraints();
 
