@@ -1337,7 +1337,7 @@ bool JoltBody3D::can_interact_with(const JoltArea3D &p_other) const {
 	return p_other.can_interact_with(*this);
 }
 
-real_t JoltBody3D::get_shape_friction(int p_index) const {
+float JoltBody3D::get_shape_friction(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), NAN);
 
 	if (p_index >= shape_frictions.size()) {
@@ -1347,7 +1347,7 @@ real_t JoltBody3D::get_shape_friction(int p_index) const {
 	return shape_frictions[p_index];
 }
 
-void JoltBody3D::set_shape_friction(int p_index, real_t p_friction) {
+void JoltBody3D::set_shape_friction(int p_index, float p_friction) {
 	ERR_FAIL_INDEX(p_index, (int)shapes.size());
 
 	int old_size = shape_frictions.size();
@@ -1362,7 +1362,7 @@ void JoltBody3D::set_shape_friction(int p_index, real_t p_friction) {
 	shape_frictions[p_index] = p_friction;
 }
 
-real_t JoltBody3D::get_shape_bounce(int p_index) const {
+float JoltBody3D::get_shape_bounce(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), NAN);
 
 	if (p_index >= shape_bounces.size()) {
@@ -1372,7 +1372,7 @@ real_t JoltBody3D::get_shape_bounce(int p_index) const {
 	return shape_bounces[p_index];
 }
 
-void JoltBody3D::set_shape_bounce(int p_index, real_t p_bounce) {
+void JoltBody3D::set_shape_bounce(int p_index, float p_bounce) {
 	ERR_FAIL_INDEX(p_index, (int)shapes.size());
 
 	int old_size = shape_bounces.size();
@@ -1388,13 +1388,13 @@ void JoltBody3D::set_shape_bounce(int p_index, real_t p_bounce) {
 }
 
 bool JoltBody3D::uses_shape_materials() const {
-	for (real_t friction : shape_frictions) {
+	for (float friction : shape_frictions) {
 		if (!Math::is_nan(friction)) {
 			return true;
 		}
 	}
 
-	for (real_t bounce : shape_bounces) {
+	for (float bounce : shape_bounces) {
 		if (!Math::is_nan(bounce)) {
 			return true;
 		}

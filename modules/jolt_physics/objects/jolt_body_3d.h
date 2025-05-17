@@ -62,8 +62,8 @@ private:
 	LocalVector<Contact> contacts;
 	LocalVector<JoltArea3D *> areas;
 	LocalVector<JoltJoint3D *> joints;
-	LocalVector<real_t> shape_frictions;
-	LocalVector<real_t> shape_bounces;
+	LocalVector<float> shape_frictions;
+	LocalVector<float> shape_bounces;
 
 	Variant custom_integration_userdata;
 
@@ -310,11 +310,11 @@ public:
 	virtual bool can_interact_with(const JoltSoftBody3D &p_other) const override;
 	virtual bool can_interact_with(const JoltArea3D &p_other) const override;
 
-	real_t get_shape_friction(int p_index) const;
-	void set_shape_friction(int p_index, real_t p_friction);
+	float get_shape_friction(int p_index) const;
+	void set_shape_friction(int p_index, float p_friction);
 
-	real_t get_shape_bounce(int p_index) const;
-	void set_shape_bounce(int p_index, real_t p_bounce);
+	float get_shape_bounce(int p_index) const;
+	void set_shape_bounce(int p_index, float p_bounce);
 
 	bool uses_shape_materials() const;
 };

@@ -177,7 +177,7 @@ real_t JoltPhysicsServer3D::body_get_shape_friction_override(RID p_body, int p_s
 	const JoltBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, NAN);
 
-	return body->get_shape_friction(p_shape_idx);
+	return (real_t)body->get_shape_friction(p_shape_idx);
 }
 
 void JoltPhysicsServer3D::body_set_shape_friction_override(RID p_body, int p_shape_idx, bool p_enable, real_t p_friction) {
@@ -185,7 +185,7 @@ void JoltPhysicsServer3D::body_set_shape_friction_override(RID p_body, int p_sha
 	ERR_FAIL_NULL(body);
 
 	if (p_enable) {
-		body->set_shape_friction(p_shape_idx, p_friction);
+		body->set_shape_friction(p_shape_idx, (float)p_friction);
 	} else {
 		body->set_shape_friction(p_shape_idx, NAN);
 	}
@@ -195,7 +195,7 @@ real_t JoltPhysicsServer3D::body_get_shape_bounce_override(RID p_body, int p_sha
 	const JoltBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, NAN);
 
-	return body->get_shape_bounce(p_shape_idx);
+	return (real_t)body->get_shape_bounce(p_shape_idx);
 }
 
 void JoltPhysicsServer3D::body_set_shape_bounce_override(RID p_body, int p_shape_idx, bool p_enable, real_t p_bounce) {
@@ -203,7 +203,7 @@ void JoltPhysicsServer3D::body_set_shape_bounce_override(RID p_body, int p_shape
 	ERR_FAIL_NULL(body);
 
 	if (p_enable) {
-		body->set_shape_bounce(p_shape_idx, p_bounce);
+		body->set_shape_bounce(p_shape_idx, (float)p_bounce);
 	} else {
 		body->set_shape_bounce(p_shape_idx, NAN);
 	}
