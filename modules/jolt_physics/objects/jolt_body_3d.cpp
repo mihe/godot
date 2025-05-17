@@ -1388,15 +1388,17 @@ void JoltBody3D::set_shape_bounce(int p_index, real_t p_bounce) {
 }
 
 bool JoltBody3D::uses_shape_materials() const {
-	for (const real_t &friction : shape_frictions) {
+	for (real_t friction : shape_frictions) {
 		if (!Math::is_nan(friction)) {
 			return true;
 		}
 	}
-	for (const real_t &bounce : shape_bounces) {
+
+	for (real_t bounce : shape_bounces) {
 		if (!Math::is_nan(bounce)) {
 			return true;
 		}
 	}
+
 	return false;
 }
