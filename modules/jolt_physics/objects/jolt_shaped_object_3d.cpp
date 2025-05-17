@@ -369,7 +369,6 @@ JoltShape3D *JoltShapedObject3D::get_shape(int p_index) const {
 
 void JoltShapedObject3D::set_shape(int p_index, JoltShape3D *p_shape) {
 	ERR_FAIL_INDEX(p_index, (int)shapes.size());
-
 	shapes[p_index] = JoltShapeInstance3D(this, p_shape);
 
 	_shapes_changed();
