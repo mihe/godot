@@ -31,6 +31,7 @@
 #include "jolt_contact_listener_3d.h"
 
 #include "../jolt_project_settings.h"
+#include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../objects/jolt_area_3d.h"
 #include "../objects/jolt_body_3d.h"
@@ -357,8 +358,8 @@ bool JoltContactListener3D::_try_override_material(const JPH::Body &p_jolt_body1
 		bounce2 = p_jolt_body2.GetRestitution();
 	}
 
-	p_settings.mCombinedFriction = Math::abs(MIN(friction1, friction2));
-	p_settings.mCombinedRestitution = CLAMP(bounce1 + bounce2, 0.0, 1.0);
+	p_settings.mCombinedFriction = JoltMath::combine_friction(friction1, friction2);
+	p_settings.mCombinedRestitution = JoltMath::combine_bounce(bounce1, bounce2);
 
 	return true;
 }
