@@ -43,7 +43,7 @@
 
 void JoltContactListener3D::OnContactAdded(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
 	_try_override_collision_response(p_body1, p_body2, p_settings);
-	_try_override_contact_properties(p_body1, p_body2, p_manifold, p_settings);
+	_try_override_material(p_body1, p_body2, p_manifold, p_settings);
 	_try_apply_surface_velocities(p_body1, p_body2, p_settings);
 	_try_add_contacts(p_body1, p_body2, p_manifold, p_settings);
 	_try_evaluate_area_overlap(p_body1, p_body2, p_manifold);
@@ -55,7 +55,7 @@ void JoltContactListener3D::OnContactAdded(const JPH::Body &p_body1, const JPH::
 
 void JoltContactListener3D::OnContactPersisted(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
 	_try_override_collision_response(p_body1, p_body2, p_settings);
-	_try_override_contact_properties(p_body1, p_body2, p_manifold, p_settings);
+	_try_override_material(p_body1, p_body2, p_manifold, p_settings);
 	_try_apply_surface_velocities(p_body1, p_body2, p_settings);
 	_try_add_contacts(p_body1, p_body2, p_manifold, p_settings);
 	_try_evaluate_area_overlap(p_body1, p_body2, p_manifold);
@@ -314,7 +314,7 @@ bool JoltContactListener3D::_try_remove_area_overlap(const JPH::SubShapeIDPair &
 	return removed;
 }
 
-bool JoltContactListener3D::_try_override_contact_properties(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
+bool JoltContactListener3D::_try_override_material(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
 	if (p_jolt_body1.IsSensor() || p_jolt_body2.IsSensor()) {
 		return false;
 	}
