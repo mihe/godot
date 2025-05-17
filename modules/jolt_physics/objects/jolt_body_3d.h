@@ -153,6 +153,7 @@ private:
 	void _axis_lock_changed();
 	void _contact_reporting_changed();
 	void _sleep_allowed_changed();
+	void _shape_materials_changed();
 
 public:
 	JoltBody3D();

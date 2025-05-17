@@ -471,12 +471,20 @@ void JoltBody3D::_shapes_committed() {
 }
 
 void JoltBody3D::_shape_removed(int p_index) {
+	bool removed_material = false;
+
 	if (shape_frictions.size() > p_index) {
 		shape_frictions.remove_at(p_index);
+		removed_material = true;
 	}
 
 	if (shape_bounces.size() > p_index) {
 		shape_bounces.remove_at(p_index);
+		removed_material = true;
+	}
+
+	if (removed_material) {
+		_shape_materials_changed();
 	}
 }
 
@@ -536,6 +544,10 @@ void JoltBody3D::_contact_reporting_changed() {
 void JoltBody3D::_sleep_allowed_changed() {
 	_update_sleep_allowed();
 	wake_up();
+}
+
+void JoltBody3D::_shape_materials_changed() {
+	_update_manifold_reduction();
 }
 
 JoltBody3D::JoltBody3D() :
@@ -1359,7 +1371,13 @@ void JoltBody3D::set_shape_friction(int p_index, float p_friction) {
 		}
 	}
 
+	if (shape_frictions[p_index] == p_friction) {
+		return;
+	}
+
 	shape_frictions[p_index] = p_friction;
+
+	_shape_materials_changed();
 }
 
 float JoltBody3D::get_shape_bounce(int p_index) const {
@@ -1384,7 +1402,13 @@ void JoltBody3D::set_shape_bounce(int p_index, float p_bounce) {
 		}
 	}
 
+	if (shape_bounces[p_index] == p_bounce) {
+		return;
+	}
+
 	shape_bounces[p_index] = p_bounce;
+
+	_shape_materials_changed();
 }
 
 bool JoltBody3D::uses_shape_materials() const {
