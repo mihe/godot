@@ -249,13 +249,17 @@ void CollisionShape3D::set_physics_material(const Ref<PhysicsMaterial> &p_materi
 		return;
 	}
 
+	if (physics_material.is_valid()) {
+		physics_material->disconnect_changed(callable_mp(this, &CollisionShape3D::_material_changed));
+	}
+
 	physics_material = p_material;
 
-	_material_changed();
-
-	if (p_material.is_valid()) {
-		p_material->connect_changed(callable_mp(this, &CollisionShape3D::_material_changed));
+	if (physics_material.is_valid()) {
+		physics_material->connect_changed(callable_mp(this, &CollisionShape3D::_material_changed));
 	}
+
+	_material_changed();
 }
 
 Ref<PhysicsMaterial> CollisionShape3D::get_physics_material() const {
