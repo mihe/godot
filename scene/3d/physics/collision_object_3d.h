@@ -177,8 +177,6 @@ public:
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 
-	_FORCE_INLINE_ bool is_area() const { return area; }
-
 	PackedStringArray get_configuration_warnings() const override;
 
 	CollisionObject3D();

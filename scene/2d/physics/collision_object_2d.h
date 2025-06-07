@@ -175,8 +175,6 @@ public:
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 
-	_FORCE_INLINE_ bool is_area() const { return area; }
-
 	CollisionObject2D();
 	~CollisionObject2D();
 };
