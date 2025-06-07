@@ -344,9 +344,6 @@ void CollisionObject2D::shape_owner_set_physics_material(uint32_t p_owner, const
 	}
 
 	ShapeData &sd = shapes[p_owner];
-	if (sd.material == p_material) {
-		return;
-	}
 	sd.material = p_material;
 
 	for (int i = 0; i < sd.shapes.size(); i++) {
