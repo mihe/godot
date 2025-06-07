@@ -252,29 +252,13 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 
 real_t combine_bounce(const GodotBody3D *p_body_a, const GodotBody3D *p_body_b, int p_shape_idx_a, int p_shape_idx_b) {
 	real_t bounce_a = p_body_a->get_shape_bounce(p_shape_idx_a);
-	if (Math::is_nan(bounce_a)) {
-		bounce_a = p_body_a->get_bounce();
-	}
-
 	real_t bounce_b = p_body_b->get_shape_bounce(p_shape_idx_b);
-	if (Math::is_nan(bounce_b)) {
-		bounce_b = p_body_b->get_bounce();
-	}
-
 	return CLAMP(bounce_a + bounce_b, 0, 1);
 }
 
 real_t combine_friction(const GodotBody3D *p_body_a, const GodotBody3D *p_body_b, int p_shape_idx_a, int p_shape_idx_b) {
 	real_t friction_a = p_body_a->get_shape_friction(p_shape_idx_a);
-	if (Math::is_nan(friction_a)) {
-		friction_a = p_body_a->get_friction();
-	}
-
 	real_t friction_b = p_body_b->get_shape_friction(p_shape_idx_b);
-	if (Math::is_nan(friction_b)) {
-		friction_b = p_body_b->get_friction();
-	}
-
 	return Math::abs(MIN(friction_a, friction_b));
 }
 
