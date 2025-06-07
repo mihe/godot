@@ -251,10 +251,6 @@ void CollisionShape3D::set_physics_material(const Ref<PhysicsMaterial> &p_materi
 
 	physics_material = p_material;
 
-	if (shape.is_null()) {
-		return;
-	}
-
 	_material_changed();
 
 	if (p_material.is_valid()) {
