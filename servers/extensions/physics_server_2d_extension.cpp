@@ -181,12 +181,6 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_area_remove_shape, "area", "shape_idx");
 	GDVIRTUAL_BIND(_area_clear_shapes, "area");
 
-	GDVIRTUAL_BIND(_body_set_shape_friction_override, "body", "shape_idx", "enable", "friction");
-	GDVIRTUAL_BIND(_body_set_shape_bounce_override, "body", "shape_idx", "enable", "bounce");
-
-	GDVIRTUAL_BIND(_body_get_shape_friction_override, "body", "shape_idx");
-	GDVIRTUAL_BIND(_body_get_shape_bounce_override, "body", "shape_idx");
-
 	GDVIRTUAL_BIND(_area_attach_object_instance_id, "area", "id");
 	GDVIRTUAL_BIND(_area_get_object_instance_id, "area");
 
@@ -237,6 +231,14 @@ void PhysicsServer2DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_body_remove_shape, "body", "shape_idx");
 	GDVIRTUAL_BIND(_body_clear_shapes, "body");
+
+	GDVIRTUAL_BIND(_body_set_shape_friction_override, "body", "shape_idx", "friction");
+	GDVIRTUAL_BIND(_body_clear_shape_friction_override, "body", "shape_idx");
+	GDVIRTUAL_BIND(_body_get_shape_friction, "body", "shape_idx");
+
+	GDVIRTUAL_BIND(_body_set_shape_bounce_override, "body", "shape_idx", "bounce");
+	GDVIRTUAL_BIND(_body_clear_shape_bounce_override, "body", "shape_idx");
+	GDVIRTUAL_BIND(_body_get_shape_bounce, "body", "shape_idx");
 
 	GDVIRTUAL_BIND(_body_attach_object_instance_id, "body", "id");
 	GDVIRTUAL_BIND(_body_get_object_instance_id, "body");

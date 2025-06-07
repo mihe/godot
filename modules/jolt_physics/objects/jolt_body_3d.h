@@ -314,10 +314,12 @@ public:
 	virtual bool can_interact_with(const JoltArea3D &p_other) const override;
 
 	float get_shape_friction(int p_index) const;
-	void set_shape_friction(int p_index, float p_friction);
+	void set_shape_friction_override(int p_index, float p_friction);
+	void clear_shape_friction_override(int p_index);
 
 	float get_shape_bounce(int p_index) const;
-	void set_shape_bounce(int p_index, float p_bounce);
+	void set_shape_bounce_override(int p_index, float p_bounce);
+	void clear_shape_bounce_override(int p_index);
 
 	bool uses_shape_materials() const { return shape_materials; }
 };

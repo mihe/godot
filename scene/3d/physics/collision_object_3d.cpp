@@ -581,12 +581,12 @@ void CollisionObject3D::shape_owner_set_physics_material(uint32_t p_owner, const
 	for (int i = 0; i < sd.shapes.size(); i++) {
 		if (p_material.is_null()) {
 			// Disable override and use the body's physics material.
-			PhysicsServer3D::get_singleton()->body_set_shape_friction_override(rid, sd.shapes[i].index, false);
-			PhysicsServer3D::get_singleton()->body_set_shape_bounce_override(rid, sd.shapes[i].index, false);
+			PhysicsServer3D::get_singleton()->body_clear_shape_friction_override(rid, sd.shapes[i].index);
+			PhysicsServer3D::get_singleton()->body_clear_shape_bounce_override(rid, sd.shapes[i].index);
 		} else {
 			// Enable material override for this shape.
-			PhysicsServer3D::get_singleton()->body_set_shape_friction_override(rid, sd.shapes[i].index, true, p_material->computed_friction());
-			PhysicsServer3D::get_singleton()->body_set_shape_bounce_override(rid, sd.shapes[i].index, true, p_material->computed_bounce());
+			PhysicsServer3D::get_singleton()->body_set_shape_friction_override(rid, sd.shapes[i].index, p_material->computed_friction());
+			PhysicsServer3D::get_singleton()->body_set_shape_bounce_override(rid, sd.shapes[i].index, p_material->computed_bounce());
 		}
 	}
 }
