@@ -1370,16 +1370,21 @@ bool JoltBody3D::can_interact_with(const JoltArea3D &p_other) const {
 }
 
 float JoltBody3D::get_shape_friction(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), NAN);
+	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), 1.0f);
 
 	if (p_index >= (int)shape_frictions.size()) {
-		return NAN;
+		return get_friction();
 	}
 
-	return shape_frictions[p_index];
+	float shape_friction = shape_frictions[p_index];
+	if (Math::is_nan(shape_friction)) {
+		return get_friction();
+	}
+
+	return shape_friction;
 }
 
-void JoltBody3D::set_shape_friction(int p_index, float p_friction) {
+void JoltBody3D::set_shape_friction_override(int p_index, float p_friction) {
 	ERR_FAIL_INDEX(p_index, (int)shapes.size());
 
 	int old_size = shape_frictions.size();
@@ -1400,17 +1405,30 @@ void JoltBody3D::set_shape_friction(int p_index, float p_friction) {
 	_shape_materials_changed();
 }
 
-float JoltBody3D::get_shape_bounce(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), NAN);
+void JoltBody3D::clear_shape_friction_override(int p_index) {
+	ERR_FAIL_INDEX(p_index, (int)shapes.size());
 
-	if (p_index >= (int)shape_bounces.size()) {
-		return NAN;
+	if (p_index < shape_frictions.size()) {
+		shape_frictions[p_index] = NAN;
 	}
-
-	return shape_bounces[p_index];
 }
 
-void JoltBody3D::set_shape_bounce(int p_index, float p_bounce) {
+float JoltBody3D::get_shape_bounce(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), 0.0f);
+
+	if (p_index >= (int)shape_bounces.size()) {
+		return get_bounce();
+	}
+
+	float shape_bounce = shape_bounces[p_index];
+	if (Math::is_nan(shape_bounce)) {
+		return get_bounce();
+	}
+
+	return shape_bounce;
+}
+
+void JoltBody3D::set_shape_bounce_override(int p_index, float p_bounce) {
 	ERR_FAIL_INDEX(p_index, (int)shapes.size());
 
 	int old_size = shape_bounces.size();
@@ -1429,4 +1447,12 @@ void JoltBody3D::set_shape_bounce(int p_index, float p_bounce) {
 	shape_bounces[p_index] = p_bounce;
 
 	_shape_materials_changed();
+}
+
+void JoltBody3D::clear_shape_bounce_override(int p_index) {
+	ERR_FAIL_INDEX(p_index, (int)shapes.size());
+
+	if (p_index < shape_bounces.size()) {
+		shape_bounces[p_index] = NAN;
+	}
 }

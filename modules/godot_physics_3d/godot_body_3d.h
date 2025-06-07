@@ -343,10 +343,12 @@ public:
 		return p_axis.dot(_inv_inertia_tensor.xform_inv(p_axis));
 	}
 
-	void set_shape_friction(int p_index, real_t p_friction);
-	void set_shape_bounce(int p_index, real_t p_bounce);
-
+	void set_shape_friction_override(int p_index, real_t p_friction);
+	void clear_shape_friction_override(int p_index);
 	real_t get_shape_friction(int p_index) const;
+
+	void set_shape_bounce_override(int p_index, real_t p_bounce);
+	void clear_shape_bounce_override(int p_index);
 	real_t get_shape_bounce(int p_index) const;
 
 	//void simulate_motion(const Transform3D& p_xform,real_t p_step);

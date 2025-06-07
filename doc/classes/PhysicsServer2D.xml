@@ -360,6 +360,22 @@
 				Attaches the [code]ObjectID[/code] of an [Object] to the body. Use [method Object.get_instance_id] to get the [code]ObjectID[/code] of a [CollisionObject2D].
 			</description>
 		</method>
+		<method name="body_clear_shape_bounce_override">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+				Clears any bounce override that's set for the body's shape with the given index. This will cause it to use the body's bounce instead, as set using [method body_set_param].
+			</description>
+		</method>
+		<method name="body_clear_shape_friction_override">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+				Clears any friction override that's set for the body's shape with the given index. This will cause it to use the body's friction instead, as set using [method body_set_param].
+			</description>
+		</method>
 		<method name="body_clear_shapes">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
@@ -469,12 +485,12 @@
 				Returns the [RID] of the shape with the given index in the body's array of shapes.
 			</description>
 		</method>
-		<method name="body_get_shape_bounce_override" qualifiers="const">
+		<method name="body_get_shape_bounce" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
-				Returns the bounciness override for the shape or [constant @GDScript.NAN] if no override is set.
+				Returns the bounce for the shape with the given index, which will either be the override value, as set using [method body_set_shape_bounce_override], or the body's bounce, as set using [method body_set_param].
 			</description>
 		</method>
 		<method name="body_get_shape_count" qualifiers="const">
@@ -484,12 +500,12 @@
 				Returns the number of shapes added to the body.
 			</description>
 		</method>
-		<method name="body_get_shape_friction_override" qualifiers="const">
+		<method name="body_get_shape_friction" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
-				Returns the friction override for the shape or [constant @GDScript.NAN] if no override is set.
+				Returns the friction for the shape with the given index, which will either be the override value, as set using [method body_set_shape_friction_override], or the body's friction, as set using [method body_set_param].
 			</description>
 		</method>
 		<method name="body_get_shape_transform" qualifiers="const">
@@ -675,10 +691,10 @@
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
-			<param index="2" name="enable" type="bool" />
-			<param index="3" name="bounce" type="float" default="0.0" />
+			<param index="2" name="bounce" type="float" />
 			<description>
-				Sets the bounce for the shape if [param enable] is [code]true[/code], resets to the body's value if [code]false[/code]. A negative value of [param bounce] is equivalent to enabling [member PhysicsMaterial.absorbent].
+				Sets the bounce override for the body's shape with the given index. A negative value of [param bounce] is equivalent to enabling [member PhysicsMaterial.absorbent].
+				Use [method body_clear_shape_bounce_override] to clear any previously set override.
 			</description>
 		</method>
 		<method name="body_set_shape_disabled">
@@ -694,10 +710,10 @@
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
-			<param index="2" name="enable" type="bool" />
-			<param index="3" name="friction" type="float" default="0.0" />
+			<param index="2" name="friction" type="float" />
 			<description>
-				Sets the friction for the shape if [param enable] is [code]true[/code], resets to the body's value if [code]false[/code]. A negative value of [param friction] is equivalent to enabling [member PhysicsMaterial.rough].
+				Sets the friction override for the body's shape with the given index. A negative value of [param friction] is equivalent to enabling [member PhysicsMaterial.absorbent].
+				Use [method body_clear_shape_friction_override] to clear any previously set override.
 			</description>
 		</method>
 		<method name="body_set_shape_transform">

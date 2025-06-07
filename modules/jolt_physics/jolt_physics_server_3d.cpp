@@ -173,42 +173,6 @@ real_t JoltPhysicsServer3D::shape_get_margin(RID p_shape) const {
 	return (real_t)shape->get_margin();
 }
 
-real_t JoltPhysicsServer3D::body_get_shape_friction_override(RID p_body, int p_shape_idx) const {
-	const JoltBody3D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_NULL_V(body, NAN);
-
-	return (real_t)body->get_shape_friction(p_shape_idx);
-}
-
-void JoltPhysicsServer3D::body_set_shape_friction_override(RID p_body, int p_shape_idx, bool p_enable, real_t p_friction) {
-	JoltBody3D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_NULL(body);
-
-	if (p_enable) {
-		body->set_shape_friction(p_shape_idx, (float)p_friction);
-	} else {
-		body->set_shape_friction(p_shape_idx, NAN);
-	}
-}
-
-real_t JoltPhysicsServer3D::body_get_shape_bounce_override(RID p_body, int p_shape_idx) const {
-	const JoltBody3D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_NULL_V(body, NAN);
-
-	return (real_t)body->get_shape_bounce(p_shape_idx);
-}
-
-void JoltPhysicsServer3D::body_set_shape_bounce_override(RID p_body, int p_shape_idx, bool p_enable, real_t p_bounce) {
-	JoltBody3D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_NULL(body);
-
-	if (p_enable) {
-		body->set_shape_bounce(p_shape_idx, (float)p_bounce);
-	} else {
-		body->set_shape_bounce(p_shape_idx, NAN);
-	}
-}
-
 real_t JoltPhysicsServer3D::shape_get_custom_solver_bias(RID p_shape) const {
 	const JoltShape3D *shape = shape_owner.get_or_null(p_shape);
 	ERR_FAIL_NULL_V(shape, 0.0);
@@ -681,6 +645,48 @@ void JoltPhysicsServer3D::body_set_shape_disabled(RID p_body, int p_shape_idx, b
 	ERR_FAIL_NULL(body);
 
 	body->set_shape_disabled(p_shape_idx, p_disabled);
+}
+
+void JoltPhysicsServer3D::body_set_shape_friction_override(RID p_body, int p_shape_idx, real_t p_friction) {
+	JoltBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->set_shape_friction_override(p_shape_idx, (float)p_friction);
+}
+
+void JoltPhysicsServer3D::body_clear_shape_friction_override(RID p_body, int p_shape_idx) {
+	JoltBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->clear_shape_friction_override(p_shape_idx);
+}
+
+real_t JoltPhysicsServer3D::body_get_shape_friction(RID p_body, int p_shape_idx) const {
+	const JoltBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, 1.0);
+
+	return (real_t)body->get_shape_friction(p_shape_idx);
+}
+
+void JoltPhysicsServer3D::body_set_shape_bounce_override(RID p_body, int p_shape_idx, real_t p_bounce) {
+	JoltBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->set_shape_bounce_override(p_shape_idx, (float)p_bounce);
+}
+
+void JoltPhysicsServer3D::body_clear_shape_bounce_override(RID p_body, int p_shape_idx) {
+	JoltBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->clear_shape_bounce_override(p_shape_idx);
+}
+
+real_t JoltPhysicsServer3D::body_get_shape_bounce(RID p_body, int p_shape_idx) const {
+	const JoltBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, 0.0);
+
+	return (real_t)body->get_shape_bounce(p_shape_idx);
 }
 
 void JoltPhysicsServer3D::body_attach_object_instance_id(RID p_body, ObjectID p_id) {

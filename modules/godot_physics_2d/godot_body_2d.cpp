@@ -683,7 +683,7 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 	_update_transform_dependent();
 }
 
-void GodotBody2D::set_shape_friction(int p_index, real_t p_friction) {
+void GodotBody2D::set_shape_friction_override(int p_index, real_t p_friction) {
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 
 	int old_size = shape_frictions.size();
@@ -698,7 +698,30 @@ void GodotBody2D::set_shape_friction(int p_index, real_t p_friction) {
 	shape_frictions[p_index] = p_friction;
 }
 
-void GodotBody2D::set_shape_bounce(int p_index, real_t p_bounce) {
+void GodotBody2D::clear_shape_friction_override(int p_index) {
+	ERR_FAIL_INDEX(p_index, get_shape_count());
+
+	if (p_index < (int)shape_frictions.size()) {
+		shape_frictions[p_index] = NAN;
+	}
+}
+
+real_t GodotBody2D::get_shape_friction(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, get_shape_count(), 1.0);
+
+	real_t shape_friction = NAN;
+	if (p_index < (int)shape_frictions.size()) {
+		shape_friction = shape_frictions[p_index];
+	}
+
+	if (Math::is_nan(shape_friction)) {
+		return get_param(PhysicsServer2D::BODY_PARAM_FRICTION);
+	}
+
+	return shape_friction;
+}
+
+void GodotBody2D::set_shape_bounce_override(int p_index, real_t p_bounce) {
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 
 	int old_size = shape_bounces.size();
@@ -713,24 +736,27 @@ void GodotBody2D::set_shape_bounce(int p_index, real_t p_bounce) {
 	shape_bounces[p_index] = p_bounce;
 }
 
-real_t GodotBody2D::get_shape_friction(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, get_shape_count(), NAN);
+void GodotBody2D::clear_shape_bounce_override(int p_index) {
+	ERR_FAIL_INDEX(p_index, get_shape_count());
 
-	if (p_index >= (int)shape_frictions.size()) {
-		return NAN;
+	if (p_index < (int)shape_bounces.size()) {
+		shape_bounces[p_index] = NAN;
 	}
-
-	return shape_frictions[p_index];
 }
 
 real_t GodotBody2D::get_shape_bounce(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, get_shape_count(), NAN);
+	ERR_FAIL_INDEX_V(p_index, get_shape_count(), 0.0);
 
-	if (p_index >= (int)shape_bounces.size()) {
-		return NAN;
+	real_t shape_bounce = NAN;
+	if (p_index < (int)shape_bounces.size()) {
+		shape_bounce = shape_bounces[p_index];
 	}
 
-	return shape_bounces[p_index];
+	if (Math::is_nan(shape_bounce)) {
+		return get_param(PhysicsServer2D::BODY_PARAM_BOUNCE);
+	}
+
+	return shape_bounce;
 }
 
 void GodotBody2D::wakeup_neighbours() {

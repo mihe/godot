@@ -340,6 +340,22 @@
 				Overridable version of [method PhysicsServer2D.body_attach_object_instance_id].
 			</description>
 		</method>
+		<method name="_body_clear_shape_bounce_override" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+				Overridable version of [method PhysicsServer2D.body_clear_shape_bounce_override].
+			</description>
+		</method>
+		<method name="_body_clear_shape_friction_override" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+				Overridable version of [method PhysicsServer2D.body_clear_shape_friction_override].
+			</description>
+		</method>
 		<method name="_body_clear_shapes" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
@@ -477,12 +493,12 @@
 				Overridable version of [method PhysicsServer2D.body_get_shape].
 			</description>
 		</method>
-		<method name="_body_get_shape_bounce_override" qualifiers="virtual required const">
+		<method name="_body_get_shape_bounce" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
-				Overridable version of [method PhysicsServer2D.body_get_shape_bounce_override].
+				Overridable version of [method PhysicsServer2D.body_get_shape_bounce].
 			</description>
 		</method>
 		<method name="_body_get_shape_count" qualifiers="virtual required const">
@@ -492,12 +508,12 @@
 				Overridable version of [method PhysicsServer2D.body_get_shape_count].
 			</description>
 		</method>
-		<method name="_body_get_shape_friction_override" qualifiers="virtual required const">
+		<method name="_body_get_shape_friction" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<description>
-				Overridable version of [method PhysicsServer2D.body_get_shape_friction_override].
+				Overridable version of [method PhysicsServer2D.body_get_shape_friction].
 			</description>
 		</method>
 		<method name="_body_get_shape_transform" qualifiers="virtual required const">
@@ -692,8 +708,7 @@
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
-			<param index="2" name="enable" type="bool" />
-			<param index="3" name="bounce" type="float" />
+			<param index="2" name="bounce" type="float" />
 			<description>
 				Overridable version of [method PhysicsServer2D.body_set_shape_bounce_override].
 			</description>
@@ -711,8 +726,7 @@
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
-			<param index="2" name="enable" type="bool" />
-			<param index="3" name="friction" type="float" />
+			<param index="2" name="friction" type="float" />
 			<description>
 				Overridable version of [method PhysicsServer2D.body_set_shape_friction_override].
 			</description>
