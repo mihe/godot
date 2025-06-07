@@ -344,10 +344,14 @@ public:
 	}
 
 	void set_shape_friction(int p_index, real_t p_friction);
-	void set_shape_bounce(int p_index, real_t p_bounce);
-
 	real_t get_shape_friction(int p_index) const;
+	bool is_shape_friction_overridden(int p_index) const;
+	void clear_shape_friction_override(int p_index);
+
+	void set_shape_bounce_override(int p_index, real_t p_bounce);
 	real_t get_shape_bounce(int p_index) const;
+	bool is_shape_bounce_overridden(int p_index) const;
+	void clear_shape_bounce_override(int p_index);
 
 	//void simulate_motion(const Transform3D& p_xform,real_t p_step);
 	void call_queries();
