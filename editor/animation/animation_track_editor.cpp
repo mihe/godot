@@ -9013,6 +9013,10 @@ String AnimationMarkerEdit::get_tooltip(const Point2 &p_pos) const {
 			String name = names[key_idx];
 			String text = TTR("Time (s):") + " " + TS->format_number(rtos(Math::snapped(animation->get_marker_time(name), 0.0001))) + "\n";
 			text += TTR("Marker:") + " " + name + "\n";
+			String editor_description = animation->get_marker_editor_description(name);
+			if (!editor_description.is_empty()) {
+				text += TTR("Description:") + " " + editor_description + "\n";
+			}
 			return text;
 		}
 	}
@@ -9179,9 +9183,11 @@ void AnimationMarkerEdit::_move_selection_commit() {
 		undo_redo->add_do_method(animation.ptr(), "remove_marker", name);
 		undo_redo->add_do_method(animation.ptr(), "add_marker", name, newpos);
 		undo_redo->add_do_method(animation.ptr(), "set_marker_color", name, animation->get_marker_color(name));
+		undo_redo->add_do_method(animation.ptr(), "set_marker_editor_description", name, animation->get_marker_editor_description(name));
 		undo_redo->add_undo_method(animation.ptr(), "remove_marker", name);
 		undo_redo->add_undo_method(animation.ptr(), "add_marker", name, time);
 		undo_redo->add_undo_method(animation.ptr(), "set_marker_color", name, animation->get_marker_color(name));
+		undo_redo->add_undo_method(animation.ptr(), "set_marker_editor_description", name, animation->get_marker_editor_description(name));
 
 		// add_marker will overwrite the overlapped key on the redo pass, so we add it back on the undo pass.
 		if (StringName overlap = animation->get_marker_at_time(newpos)) {
@@ -9190,6 +9196,7 @@ void AnimationMarkerEdit::_move_selection_commit() {
 			}
 			undo_redo->add_undo_method(animation.ptr(), "add_marker", overlap, newpos);
 			undo_redo->add_undo_method(animation.ptr(), "set_marker_color", overlap, animation->get_marker_color(overlap));
+			undo_redo->add_undo_method(animation.ptr(), "set_marker_editor_description", overlap, animation->get_marker_editor_description(overlap));
 		}
 	}
 
@@ -9219,6 +9226,7 @@ void AnimationMarkerEdit::_delete_selected_markers() {
 			undo_redo->add_do_method(animation.ptr(), "remove_marker", name);
 			undo_redo->add_undo_method(animation.ptr(), "add_marker", name, time);
 			undo_redo->add_undo_method(animation.ptr(), "set_marker_color", name, animation->get_marker_color(name));
+			undo_redo->add_undo_method(animation.ptr(), "set_marker_editor_description", name, animation->get_marker_editor_description(name));
 		}
 		_clear_selection_for_anim(animation);
 
@@ -9355,6 +9363,7 @@ void AnimationMarkerEdit::_marker_insert_confirmed() {
 	if (existing_marker) {
 		undo_redo->add_undo_method(animation.ptr(), "add_marker", existing_marker, marker_insert_ofs);
 		undo_redo->add_undo_method(animation.ptr(), "set_marker_color", existing_marker, animation->get_marker_color(existing_marker));
+		undo_redo->add_undo_method(animation.ptr(), "set_marker_editor_description", existing_marker, animation->get_marker_editor_description(existing_marker));
 	}
 	undo_redo->add_do_method(animation.ptr(), "set_marker_color", name, marker_insert_color->get_pick_color());
 
@@ -9392,9 +9401,11 @@ void AnimationMarkerEdit::_marker_rename_confirmed() {
 		undo_redo->add_do_method(animation.ptr(), "remove_marker", prev_name);
 		undo_redo->add_do_method(animation.ptr(), "add_marker", new_name, animation->get_marker_time(prev_name));
 		undo_redo->add_do_method(animation.ptr(), "set_marker_color", new_name, animation->get_marker_color(prev_name));
+		undo_redo->add_do_method(animation.ptr(), "set_marker_editor_description", new_name, animation->get_marker_editor_description(prev_name));
 		undo_redo->add_undo_method(animation.ptr(), "remove_marker", new_name);
 		undo_redo->add_undo_method(animation.ptr(), "add_marker", prev_name, animation->get_marker_time(prev_name));
 		undo_redo->add_undo_method(animation.ptr(), "set_marker_color", prev_name, animation->get_marker_color(prev_name));
+		undo_redo->add_undo_method(animation.ptr(), "set_marker_editor_description", prev_name, animation->get_marker_editor_description(prev_name));
 		undo_redo->add_do_method(this, "_select_key", new_name, true);
 		undo_redo->add_undo_method(this, "_select_key", prev_name, true);
 		undo_redo->commit_action();
@@ -9497,6 +9508,15 @@ bool AnimationMarkerKeyEdit::_set(const StringName &p_name, const Variant &p_val
 			undo_redo->commit_action();
 		}
 		return true;
+	} else if (p_name == "editor_description") {
+		String description = p_value;
+		String prev_description = animation->get_marker_editor_description(marker_name);
+		if (description != prev_description) {
+			undo_redo->create_action(TTR("Edit Marker Editor Description"));
+			undo_redo->add_do_method(animation.ptr(), "set_marker_editor_description", marker_name, description);
+			undo_redo->add_undo_method(animation.ptr(), "set_marker_editor_description", marker_name, prev_description);
+			undo_redo->commit_action();
+		}
 	}
 
 	return false;
@@ -9513,6 +9533,11 @@ bool AnimationMarkerKeyEdit::_get(const StringName &p_name, Variant &r_ret) cons
 		return true;
 	}
 
+	if (p_name == "editor_description") {
+		r_ret = animation->get_marker_editor_description(marker_name);
+		return true;
+	}
+
 	return false;
 }
 
@@ -9523,6 +9548,7 @@ void AnimationMarkerKeyEdit::_get_property_list(List<PropertyInfo> *p_list) cons
 
 	p_list->push_back(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::COLOR, "color", PROPERTY_HINT_COLOR_NO_ALPHA));
+	p_list->push_back(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT));
 }
 
 void AnimationMultiMarkerKeyEdit::_bind_methods() {
@@ -9549,6 +9575,17 @@ bool AnimationMultiMarkerKeyEdit::_set(const StringName &p_name, const Variant &
 		undo_redo->commit_action();
 
 		return true;
+	} else if (p_name == "editor_description") {
+		String description = p_value;
+
+		undo_redo->create_action(TTR("Multi Edit Marker Editor Description"));
+
+		for (const StringName &marker_name : marker_names) {
+			undo_redo->add_do_method(animation.ptr(), "set_marker_editor_description", marker_name, description);
+			undo_redo->add_undo_method(animation.ptr(), "set_marker_editor_description", marker_name, animation->get_marker_editor_description(marker_name));
+		}
+
+		undo_redo->commit_action();
 	}
 
 	return false;
@@ -9557,6 +9594,9 @@ bool AnimationMultiMarkerKeyEdit::_set(const StringName &p_name, const Variant &
 bool AnimationMultiMarkerKeyEdit::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == "color") {
 		r_ret = animation->get_marker_color(marker_names[0]);
+		return true;
+	} else if (p_name == "editor_description") {
+		r_ret = animation->get_marker_editor_description(marker_names[0]);
 		return true;
 	}
 
@@ -9594,15 +9634,19 @@ void AnimationMarkerKeyEditEditor::_time_edit_exited() {
 	undo_redo->create_action(TTR("Animation Change Marker Time"));
 
 	Color color = animation->get_marker_color(marker_name);
+	String editor_description = animation->get_marker_editor_description(marker_name);
 	undo_redo->add_do_method(animation.ptr(), "add_marker", marker_name, new_time);
 	undo_redo->add_do_method(animation.ptr(), "set_marker_color", marker_name, color);
+	undo_redo->add_do_method(animation.ptr(), "set_marker_editor_description", marker_name, editor_description);
 	undo_redo->add_undo_method(animation.ptr(), "remove_marker", marker_name);
 	undo_redo->add_undo_method(animation.ptr(), "add_marker", marker_name, prev_time);
 	undo_redo->add_undo_method(animation.ptr(), "set_marker_color", marker_name, color);
+	undo_redo->add_undo_method(animation.ptr(), "set_marker_editor_description", marker_name, editor_description);
 	StringName existing_marker = animation->get_marker_at_time(new_time);
 	if (existing_marker) {
 		undo_redo->add_undo_method(animation.ptr(), "add_marker", existing_marker, animation->get_marker_time(existing_marker));
 		undo_redo->add_undo_method(animation.ptr(), "set_marker_color", existing_marker, animation->get_marker_color(existing_marker));
+		undo_redo->add_undo_method(animation.ptr(), "set_marker_editor_description", existing_marker, animation->get_marker_editor_description(existing_marker));
 	}
 	AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
 	if (ape) {

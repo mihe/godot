@@ -76,6 +76,10 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				color = marker["color"];
 			}
 			marker_colors.insert(marker_name, color);
+			String editor_description = marker.get("editor_description", String());
+			if (!editor_description.is_empty()) {
+				marker_editor_descriptions.insert(marker_name, editor_description);
+			}
 		}
 
 		return true;
@@ -496,6 +500,7 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 			d["name"] = E->key;
 			d["time"] = E->value;
 			d["color"] = marker_colors[E->key];
+			d["editor_description"] = marker_editor_descriptions[E->key];
 			markers.push_back(d);
 		}
 
@@ -3216,6 +3221,7 @@ void Animation::add_marker(const StringName &p_name, double p_time) {
 	if ((uint32_t)idx < marker_names.size() && Math::is_equal_approx(p_time, marker_names[idx].time)) {
 		marker_times.erase(marker_names[idx].name);
 		marker_colors.erase(marker_names[idx].name);
+		marker_editor_descriptions.erase(marker_names[idx].name);
 		marker_names[idx].name = p_name;
 		marker_times.insert(p_name, p_time);
 		marker_colors.insert(p_name, Color(1, 1, 1));
@@ -3235,6 +3241,7 @@ void Animation::remove_marker(const StringName &p_name) {
 	marker_names.remove_at(idx);
 	marker_times.remove(E);
 	marker_colors.erase(p_name);
+	marker_editor_descriptions.erase(p_name);
 }
 
 bool Animation::has_marker(const StringName &p_name) const {
@@ -3292,6 +3299,19 @@ Color Animation::get_marker_color(const StringName &p_name) const {
 
 void Animation::set_marker_color(const StringName &p_name, const Color &p_color) {
 	marker_colors[p_name] = p_color;
+}
+
+String Animation::get_marker_editor_description(const StringName &p_name) const {
+	const String *description = marker_editor_descriptions.getptr(p_name);
+	return description != nullptr ? *description : String();
+}
+
+void Animation::set_marker_editor_description(const StringName &p_name, const String &p_description) {
+	if (p_description.is_empty()) {
+		marker_editor_descriptions.erase(p_name);
+	} else {
+		marker_editor_descriptions[p_name] = p_description;
+	}
 }
 
 Vector<Variant> Animation::method_track_get_params(int p_track, int p_key_idx) const {
@@ -4052,6 +4072,8 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_marker_names"), &Animation::get_marker_names);
 	ClassDB::bind_method(D_METHOD("get_marker_color", "name"), &Animation::get_marker_color);
 	ClassDB::bind_method(D_METHOD("set_marker_color", "name", "color"), &Animation::set_marker_color);
+	ClassDB::bind_method(D_METHOD("get_marker_editor_description", "name"), &Animation::get_marker_editor_description);
+	ClassDB::bind_method(D_METHOD("set_marker_editor_description", "name", "description"), &Animation::set_marker_editor_description);
 
 	ClassDB::bind_method(D_METHOD("set_length", "time_sec"), &Animation::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &Animation::get_length);

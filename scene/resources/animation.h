@@ -249,6 +249,7 @@ private:
 	LocalVector<MarkerKey> marker_names; // time -> name
 	HashMap<StringName, double> marker_times; // name -> time
 	HashMap<StringName, Color> marker_colors; // name -> color
+	HashMap<StringName, String> marker_editor_descriptions; // name -> description
 
 	LocalVector<Track *> tracks;
 
@@ -525,6 +526,8 @@ public:
 	PackedStringArray get_marker_names() const;
 	Color get_marker_color(const StringName &p_name) const;
 	void set_marker_color(const StringName &p_name, const Color &p_color);
+	String get_marker_editor_description(const StringName &p_name) const;
+	void set_marker_editor_description(const StringName &p_name, const String &p_description);
 
 	void set_length(real_t p_length);
 	real_t get_length() const;
