@@ -30,6 +30,7 @@
 
 #include "os_linuxbsd.h"
 
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 
 #include <unistd.h>
@@ -59,6 +60,8 @@ int main(int argc, char *argv[]) {
 	struct rlimit stack_lim = { 0x1E00000, 0x1E00000 };
 	setrlimit(RLIMIT_STACK, &stack_lim);
 #endif
+
+	godot_init_profiler();
 
 	OS_LinuxBSD os;
 
@@ -95,5 +98,6 @@ int main(int argc, char *argv[]) {
 	}
 	free(cwd);
 
+	godot_cleanup_profiler();
 	return os.get_exit_code();
 }
