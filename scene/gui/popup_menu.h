@@ -37,11 +37,21 @@
 #include "scene/resources/text_line.h"
 
 class PanelContainer;
+class VBoxContainer;
+class LineEdit;
 class Timer;
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
 
+public:
+	enum SearchBehavior {
+		SEARCH_NORMAL,
+		SEARCH_ALWAYS_HIDE,
+		SEARCH_ALWAYS_SHOW,
+	};
+
+private:
 	static HashMap<NativeMenu::SystemMenus, PopupMenu *> system_menus;
 
 	struct Item {
@@ -61,6 +71,8 @@ class PopupMenu : public Popup {
 		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
 		bool checked = false;
+		bool visible = true;
+		SearchBehavior search_behavior = SEARCH_NORMAL;
 		enum {
 			CHECKABLE_TYPE_NONE,
 			CHECKABLE_TYPE_CHECK_BOX,
@@ -175,7 +187,10 @@ class PopupMenu : public Popup {
 	uint64_t search_time_msec = 0;
 	String search_string = "";
 
+	int search_bar_enabled_on_item_count = 0;
 	PanelContainer *panel = nullptr;
+	VBoxContainer *vbox_container = nullptr;
+	LineEdit *search_bar = nullptr;
 	ScrollContainer *scroll_container = nullptr;
 	Control *control = nullptr;
 
@@ -194,6 +209,7 @@ class PopupMenu : public Popup {
 
 		int v_separation = 0;
 		int h_separation = 0;
+		int search_bar_separation = 0;
 		int indent = 0;
 		int item_start_padding = 0;
 		int item_end_padding = 0;
@@ -209,6 +225,7 @@ class PopupMenu : public Popup {
 		Ref<Texture2D> radio_unchecked;
 		Ref<Texture2D> radio_unchecked_disabled;
 
+		Ref<Texture2D> search;
 		Ref<Texture2D> submenu;
 		Ref<Texture2D> submenu_mirrored;
 
@@ -230,6 +247,10 @@ class PopupMenu : public Popup {
 	} theme_cache;
 
 	void _draw_items();
+	void _search_bar_input(const Ref<InputEvent> &p_event);
+	void _search_bar_text_changed(const String &p_new_text);
+	void _filter_items(const String &p_query);
+	void _update_wrapped_size(bool p_keep_width = false);
 
 	void _close_pressed();
 	void _menu_changed();
@@ -363,6 +384,9 @@ public:
 	int get_item_max_states(int p_idx) const;
 	int get_item_state(int p_idx) const;
 
+	void set_item_search_behavior(int p_idx, SearchBehavior p_behavior);
+	SearchBehavior get_item_search_behavior(int p_idx) const;
+
 	void set_focused_item(int p_idx);
 	int get_focused_item() const;
 
@@ -371,6 +395,11 @@ public:
 
 	void set_prefer_native_menu(bool p_enabled);
 	bool is_prefer_native_menu() const;
+
+	bool is_search_bar_enabled() const;
+
+	void set_search_bar_enabled_on_item_count(int p_count);
+	int get_search_bar_enabled_on_item_count() const;
 
 	bool is_native_menu() const;
 
@@ -423,3 +452,5 @@ public:
 	PopupMenu();
 	~PopupMenu();
 };
+
+VARIANT_ENUM_CAST(PopupMenu::SearchBehavior);

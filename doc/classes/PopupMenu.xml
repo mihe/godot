@@ -315,6 +315,13 @@
 				Returns the max states of the item at the given [param index].
 			</description>
 		</method>
+		<method name="get_item_search_behavior" qualifiers="const">
+			<return type="int" enum="PopupMenu.SearchBehavior" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the search behavior of the item at the given [param index].
+			</description>
+		</method>
 		<method name="get_item_shortcut" qualifiers="const">
 			<return type="Shortcut" />
 			<param index="0" name="index" type="int" />
@@ -406,6 +413,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the system native menu is supported and currently used by this [PopupMenu].
+			</description>
+		</method>
+		<method name="is_search_bar_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if search bar is currently enabled.
 			</description>
 		</method>
 		<method name="is_system_menu" qualifiers="const">
@@ -568,6 +581,14 @@
 				Sets the max states of a multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
+		<method name="set_item_search_behavior">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="behavior" type="int" enum="PopupMenu.SearchBehavior" />
+			<description>
+				Sets the search behavior of the item at the given [param index]. See [member search_bar_enabled_on_item_count].
+			</description>
+		</method>
 		<method name="set_item_shortcut">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -660,6 +681,10 @@
 			If [code]true[/code], [MenuBar] will use native menu when supported.
 			[b]Note:[/b] If [PopupMenu] is linked to [StatusIndicator], [MenuBar], or another [PopupMenu] item it can use native menu regardless of this property, use [method is_native_menu] to check it.
 		</member>
+		<member name="search_bar_enabled_on_item_count" type="int" setter="set_search_bar_enabled_on_item_count" getter="get_search_bar_enabled_on_item_count" default="0">
+			Enables the [PopupMenu] search bar if the item count is greater than [code]0[/code].
+			[b]Note:[/b] When enabled, [member allow_search] is ignored.
+		</member>
 		<member name="shrink_height" type="bool" setter="set_shrink_height" getter="get_shrink_height" default="true">
 			If [code]true[/code], shrinks [PopupMenu] to minimum height when it's shown.
 		</member>
@@ -702,6 +727,17 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="SEARCH_NORMAL" value="0" enum="SearchBehavior">
+			The item is visible when it matches the search filter and hidden when it doesn't. This is the default behavior.
+		</constant>
+		<constant name="SEARCH_ALWAYS_HIDE" value="1" enum="SearchBehavior">
+			The item is always hidden when there's a search filter.
+		</constant>
+		<constant name="SEARCH_ALWAYS_SHOW" value="2" enum="SearchBehavior">
+			The item is always visible when there's a search filter.
+		</constant>
+	</constants>
 	<theme_items>
 		<theme_item name="font_accelerator_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 0.8)">
 			The text [Color] used for shortcuts and accelerators that show next to the menu item name when defined. See [method get_item_accelerator] for more info on accelerators.
@@ -746,6 +782,9 @@
 			The size of the item text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
+		<theme_item name="search_bar_separation" data_type="constant" type="int" default="4">
+			The vertical space between search bar and menu items.
+		</theme_item>
 		<theme_item name="separator_outline_size" data_type="constant" type="int" default="0">
 			The size of the labeled separator text outline.
 		</theme_item>
@@ -781,6 +820,9 @@
 		</theme_item>
 		<theme_item name="radio_unchecked_disabled" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the unchecked radio button items when they are disabled.
+		</theme_item>
+		<theme_item name="search" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the search bar's search icon.
 		</theme_item>
 		<theme_item name="submenu" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the submenu arrow (for left-to-right layouts).
