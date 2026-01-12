@@ -7315,7 +7315,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 						}
 #endif
 						rendering_driver = tested_rendering_driver;
-						OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+						OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, i > 0 ? OS::RENDERING_SOURCE_FALLBACK : OS::get_singleton()->get_current_rendering_driver_name_source());
 
 						break;
 					}
@@ -7341,8 +7341,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
 			WARN_PRINT("Your video card drivers seem not to support Direct3D 12 or Vulkan, switching to OpenGL 3.");
 			rendering_driver = "opengl3";
-			OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			rendering_driver_failed = false;
 		}
 	}
@@ -7424,7 +7424,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 				}
 			}
 			rendering_driver = "opengl3_angle";
-			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 		}
 	}
 
@@ -7443,7 +7443,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dll and libGLESv2.dll) are missing, switching to native OpenGL.");
 #endif
 				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else {
 				r_error = ERR_UNAVAILABLE;
 				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
