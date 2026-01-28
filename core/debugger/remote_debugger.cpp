@@ -631,7 +631,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 	send_message("debug_exit", Array());
 
-	if (Thread::is_main_thread() && mouse_mode != Input::MouseMode::MOUSE_MODE_VISIBLE) {
+	if (Thread::is_main_thread() && mouse_mode != Input::MOUSE_MODE_VISIBLE) {
 		Input::get_singleton()->set_mouse_mode(mouse_mode);
 	}
 
