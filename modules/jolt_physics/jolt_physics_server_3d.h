@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/templates/rid_owner.h"
+#include "core/variant/typed_array.h"
 #include "servers/physics_3d/physics_server_3d.h"
 
 class JoltArea3D;
@@ -125,6 +126,13 @@ public:
 
 	static JoltPhysicsServer3D *get_singleton() { return singleton; }
 
+	virtual TypedArray<Dictionary> shape_get_property_list(RID p_shape, const StringName &p_class) const override { return TypedArray<Dictionary>(); }
+	virtual Dictionary shape_validate_property(RID p_shape, const StringName &p_class, const Dictionary &p_property) const override { return Dictionary(); }
+	virtual bool shape_set_property(RID p_shape, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return false; }
+	virtual Variant shape_get_property(RID p_shape, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
+	virtual bool shape_property_can_revert(RID p_shape, const StringName &p_class, const StringName &p_property) const override { return false; }
+	virtual Variant shape_property_get_revert(RID p_shape, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
+
 	virtual RID world_boundary_shape_create() override;
 	virtual RID separation_ray_shape_create() override;
 	virtual RID sphere_shape_create() override;
@@ -150,6 +158,11 @@ public:
 
 	virtual RID space_create() override;
 
+	virtual TypedArray<Dictionary> space_get_property_list(RID p_space, const StringName &p_class) const override { return TypedArray<Dictionary>(); }
+	virtual Dictionary space_validate_property(RID p_space, const StringName &p_class, const Dictionary &p_property) const override { return Dictionary(); }
+	virtual bool space_set_property(RID p_space, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return false; }
+	virtual Variant space_get_property(RID p_space, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
+
 	virtual void space_set_active(RID p_space, bool p_active) override;
 	virtual bool space_is_active(RID p_space) const override;
 
@@ -163,6 +176,13 @@ public:
 	virtual int space_get_contact_count(RID p_space) const override;
 
 	virtual RID area_create() override;
+
+	virtual TypedArray<Dictionary> area_get_property_list(RID p_area, const StringName &p_class) const override { return TypedArray<Dictionary>(); }
+	virtual Dictionary area_validate_property(RID p_area, const StringName &p_class, const Dictionary &p_property) const override { return Dictionary(); }
+	virtual bool area_set_property(RID p_area, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return false; }
+	virtual Variant area_get_property(RID p_area, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
+	virtual bool area_property_can_revert(RID p_area, const StringName &p_class, const StringName &p_property) const override { return false; }
+	virtual Variant area_property_get_revert(RID p_area, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
 
 	virtual void area_set_space(RID p_area, RID p_space) override;
 	virtual RID area_get_space(RID p_area) const override;
@@ -205,6 +225,13 @@ public:
 	virtual void area_set_area_monitor_callback(RID p_area, const Callable &p_callback) override;
 
 	virtual RID body_create() override;
+
+	virtual TypedArray<Dictionary> body_get_property_list(RID p_body, const StringName &p_class) const override { return TypedArray<Dictionary>(); }
+	virtual Dictionary body_validate_property(RID p_body, const StringName &p_class, const Dictionary &p_property) const override { return Dictionary(); }
+	virtual bool body_set_property(RID p_body, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return false; }
+	virtual Variant body_get_property(RID p_body, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
+	virtual bool body_property_can_revert(RID p_body, const StringName &p_class, const StringName &p_property) const override { return false; }
+	virtual Variant body_property_get_revert(RID p_body, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
 
 	virtual void body_set_space(RID p_body, RID p_space) override;
 	virtual RID body_get_space(RID p_body) const override;
@@ -300,6 +327,13 @@ public:
 
 	virtual RID soft_body_create() override;
 
+	virtual TypedArray<Dictionary> soft_body_get_property_list(RID p_body, const StringName &p_class) const override { return TypedArray<Dictionary>(); }
+	virtual Dictionary soft_body_validate_property(RID p_body, const StringName &p_class, const Dictionary &p_property) const override { return Dictionary(); }
+	virtual bool soft_body_set_property(RID p_body, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return false; }
+	virtual Variant soft_body_get_property(RID p_body, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
+	virtual bool soft_body_property_can_revert(RID p_body, const StringName &p_class, const StringName &p_property) const override { return false; }
+	virtual Variant soft_body_property_get_revert(RID p_body, const StringName &p_class, const StringName &p_property) const override { return Variant(); }
+
 	virtual void soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> rp_rendering_server_handler) override;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) override;
@@ -362,6 +396,14 @@ public:
 	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) const override;
 
 	virtual RID joint_create() override;
+
+	virtual TypedArray<Dictionary> joint_get_property_list(RID p_joint, const StringName &p_class) const override;
+	virtual Dictionary joint_validate_property(RID p_joint, const StringName &p_class, const Dictionary &p_property) const override;
+	virtual bool joint_set_property(RID p_joint, const StringName &p_class, const StringName &p_property, const Variant &p_value) override;
+	virtual Variant joint_get_property(RID p_joint, const StringName &p_class, const StringName &p_property) const override;
+	virtual bool joint_property_can_revert(RID p_joint, const StringName &p_class, const StringName &p_property) const override;
+	virtual Variant joint_property_get_revert(RID p_joint, const StringName &p_class, const StringName &p_property) const override;
+
 	virtual void joint_clear(RID p_joint) override;
 
 	virtual void joint_make_pin(RID p_joint, RID p_body_a, const Vector3 &p_local_a, RID p_body_b, const Vector3 &p_local_b) override;

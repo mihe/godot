@@ -30,6 +30,52 @@
 
 #include "physics_body_3d.h"
 
+bool PhysicsBody3D::_set(const StringName &p_name, const Variant &p_property) {
+	if (PhysicsServer3D::get_singleton()->body_set_property(get_rid(), get_class_static(), p_name, p_property)) {
+		return true;
+	}
+
+	return false;
+}
+
+bool PhysicsBody3D::_get(const StringName &p_name, Variant &r_property) const {
+	Variant value = PhysicsServer3D::get_singleton()->body_get_property(get_rid(), get_class_static(), p_name);
+	if (value.get_type() != Variant::NIL) {
+		r_property = value;
+		return true;
+	}
+
+	return false;
+}
+
+void PhysicsBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const Variant &property : PhysicsServer3D::get_singleton()->body_get_property_list(get_rid(), get_class_static())) {
+		p_list->push_back(PropertyInfo::from_dict(property));
+	}
+}
+
+void PhysicsBody3D::_validate_property(PropertyInfo &r_property) const {
+	Dictionary current_property = (Dictionary)r_property;
+	Dictionary modified_property = PhysicsServer3D::get_singleton()->body_validate_property(get_rid(), get_class_static(), current_property);
+	if (!modified_property.is_empty() && modified_property != current_property) {
+		r_property = PropertyInfo::from_dict(modified_property);
+	}
+}
+
+bool PhysicsBody3D::_property_can_revert(const StringName &p_name) const {
+	return PhysicsServer3D::get_singleton()->body_property_can_revert(get_rid(), get_class_static(), p_name);
+}
+
+bool PhysicsBody3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	Variant reverted_value = PhysicsServer3D::get_singleton()->body_property_get_revert(get_rid(), get_class_static(), p_name);
+	if (reverted_value.get_type() != Variant::NIL) {
+		r_property = reverted_value;
+		return true;
+	}
+
+	return false;
+}
+
 void PhysicsBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));

@@ -100,6 +100,13 @@ private:
 protected:
 	CollisionObject3D(RID p_rid, bool p_area);
 
+	bool _set(const StringName &p_name, const Variant &p_property);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &r_property) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
 	_FORCE_INLINE_ void lock_callback() { callback_lock++; }
 	_FORCE_INLINE_ void unlock_callback() {
 		ERR_FAIL_COND(callback_lock == 0);

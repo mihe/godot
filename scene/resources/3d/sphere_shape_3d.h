@@ -39,6 +39,13 @@ class SphereShape3D : public Shape3D {
 	float radius = 0.5f;
 
 protected:
+	bool _set(const StringName &p_name, const Variant &p_property);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &r_property) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
 	static void _bind_methods();
 
 	virtual void _update_shape() override;

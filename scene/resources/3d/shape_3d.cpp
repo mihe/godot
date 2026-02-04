@@ -34,6 +34,52 @@
 #include "scene/resources/mesh.h"
 #include "servers/physics_3d/physics_server_3d.h"
 
+bool Shape3D::_set(const StringName &p_name, const Variant &p_property) {
+	if (PhysicsServer3D::get_singleton()->shape_set_property(shape, get_class_static(), p_name, p_property)) {
+		return true;
+	}
+
+	return false;
+}
+
+bool Shape3D::_get(const StringName &p_name, Variant &r_property) const {
+	Variant value = PhysicsServer3D::get_singleton()->shape_get_property(shape, get_class_static(), p_name);
+	if (value.get_type() != Variant::NIL) {
+		r_property = value;
+		return true;
+	}
+
+	return false;
+}
+
+void Shape3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const Variant &property : PhysicsServer3D::get_singleton()->shape_get_property_list(shape, get_class_static())) {
+		p_list->push_back(PropertyInfo::from_dict(property));
+	}
+}
+
+void Shape3D::_validate_property(PropertyInfo &r_property) const {
+	Dictionary current_property = (Dictionary)r_property;
+	Dictionary modified_property = PhysicsServer3D::get_singleton()->shape_validate_property(shape, get_class_static(), current_property);
+	if (!modified_property.is_empty() && modified_property != current_property) {
+		r_property = PropertyInfo::from_dict(modified_property);
+	}
+}
+
+bool Shape3D::_property_can_revert(const StringName &p_name) const {
+	return PhysicsServer3D::get_singleton()->shape_property_can_revert(shape, get_class_static(), p_name);
+}
+
+bool Shape3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	Variant reverted_value = PhysicsServer3D::get_singleton()->shape_property_get_revert(shape, get_class_static(), p_name);
+	if (reverted_value.get_type() != Variant::NIL) {
+		r_property = reverted_value;
+		return true;
+	}
+
+	return false;
+}
+
 void Shape3D::add_vertices_to_array(Vector<Vector3> &array, const Transform3D &p_xform) {
 	Vector<Vector3> toadd = get_debug_mesh_lines();
 

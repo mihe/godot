@@ -644,44 +644,87 @@ float Area3D::get_reverb_uniformity() const {
 	return reverb_uniformity;
 }
 
-void Area3D::_validate_property(PropertyInfo &p_property) const {
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		return;
+bool Area3D::_set(const StringName &p_name, const Variant &p_property) {
+	if (PhysicsServer3D::get_singleton()->area_set_property(get_rid(), get_class_static(), p_name, p_property)) {
+		return true;
 	}
-	if (p_property.name == "audio_bus_name" || p_property.name == "reverb_bus_name") {
-		String options;
-		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0) {
-				options += ",";
-			}
-			String name = AudioServer::get_singleton()->get_bus_name(i);
-			options += name;
-		}
 
-		p_property.hint_string = options;
-	} else if (p_property.name.begins_with("gravity") && p_property.name != "gravity_space_override") {
-		if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		} else {
-			if (gravity_is_point) {
-				if (p_property.name == "gravity_direction") {
-					p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	return false;
+}
+
+bool Area3D::_get(const StringName &p_name, Variant &r_property) const {
+	Variant value = PhysicsServer3D::get_singleton()->area_get_property(get_rid(), get_class_static(), p_name);
+	if (value.get_type() != Variant::NIL) {
+		r_property = value;
+		return true;
+	}
+
+	return false;
+}
+
+void Area3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const Variant &property : PhysicsServer3D::get_singleton()->area_get_property_list(get_rid(), get_class_static())) {
+		p_list->push_back(PropertyInfo::from_dict(property));
+	}
+}
+
+void Area3D::_validate_property(PropertyInfo &p_property) const {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "audio_bus_name" || p_property.name == "reverb_bus_name") {
+			String options;
+			for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+				if (i > 0) {
+					options += ",";
 				}
+				String name = AudioServer::get_singleton()->get_bus_name(i);
+				options += name;
+			}
+
+			p_property.hint_string = options;
+		} else if (p_property.name.begins_with("gravity") && p_property.name != "gravity_space_override") {
+			if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			} else {
-				if (p_property.name.begins_with("gravity_point_")) {
-					p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+				if (gravity_is_point) {
+					if (p_property.name == "gravity_direction") {
+						p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+					}
+				} else {
+					if (p_property.name.begins_with("gravity_point_")) {
+						p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+					}
 				}
 			}
-		}
-	} else if (p_property.name.begins_with("linear_damp") && p_property.name != "linear_damp_space_override") {
-		if (linear_damp_space_override == SPACE_OVERRIDE_DISABLED) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	} else if (p_property.name.begins_with("angular_damp") && p_property.name != "angular_damp_space_override") {
-		if (angular_damp_space_override == SPACE_OVERRIDE_DISABLED) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		} else if (p_property.name.begins_with("linear_damp") && p_property.name != "linear_damp_space_override") {
+			if (linear_damp_space_override == SPACE_OVERRIDE_DISABLED) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else if (p_property.name.begins_with("angular_damp") && p_property.name != "angular_damp_space_override") {
+			if (angular_damp_space_override == SPACE_OVERRIDE_DISABLED) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
 	}
+
+	Dictionary current_property = (Dictionary)p_property;
+	Dictionary modified_property = PhysicsServer3D::get_singleton()->area_validate_property(get_rid(), get_class_static(), current_property);
+	if (!modified_property.is_empty() && modified_property != current_property) {
+		p_property = PropertyInfo::from_dict(modified_property);
+	}
+}
+
+bool Area3D::_property_can_revert(const StringName &p_name) const {
+	return PhysicsServer3D::get_singleton()->area_property_can_revert(get_rid(), get_class_static(), p_name);
+}
+
+bool Area3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	Variant reverted_value = PhysicsServer3D::get_singleton()->area_property_get_revert(get_rid(), get_class_static(), p_name);
+	if (reverted_value.get_type() != Variant::NIL) {
+		r_property = reverted_value;
+		return true;
+	}
+
+	return false;
 }
 
 void Area3D::_bind_methods() {

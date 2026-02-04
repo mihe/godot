@@ -47,6 +47,14 @@ public:
 
 protected:
 	real_t params[PARAM_MAX];
+
+	bool _set(const StringName &p_name, const Variant &p_property);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &r_property) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
 	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 

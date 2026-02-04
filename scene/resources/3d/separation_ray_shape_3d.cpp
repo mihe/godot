@@ -78,6 +78,52 @@ bool SeparationRayShape3D::get_slide_on_slope() const {
 	return slide_on_slope;
 }
 
+bool SeparationRayShape3D::_set(const StringName &p_name, const Variant &p_property) {
+	if (PhysicsServer3D::get_singleton()->shape_set_property(get_shape(), get_class_static(), p_name, p_property)) {
+		return true;
+	}
+
+	return false;
+}
+
+bool SeparationRayShape3D::_get(const StringName &p_name, Variant &r_property) const {
+	Variant value = PhysicsServer3D::get_singleton()->shape_get_property(get_shape(), get_class_static(), p_name);
+	if (value.get_type() != Variant::NIL) {
+		r_property = value;
+		return true;
+	}
+
+	return false;
+}
+
+void SeparationRayShape3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const Variant &property : PhysicsServer3D::get_singleton()->shape_get_property_list(get_shape(), get_class_static())) {
+		p_list->push_back(PropertyInfo::from_dict(property));
+	}
+}
+
+void SeparationRayShape3D::_validate_property(PropertyInfo &r_property) const {
+	Dictionary current_property = (Dictionary)r_property;
+	Dictionary modified_property = PhysicsServer3D::get_singleton()->shape_validate_property(get_shape(), get_class_static(), current_property);
+	if (!modified_property.is_empty() && modified_property != current_property) {
+		r_property = PropertyInfo::from_dict(modified_property);
+	}
+}
+
+bool SeparationRayShape3D::_property_can_revert(const StringName &p_name) const {
+	return PhysicsServer3D::get_singleton()->shape_property_can_revert(get_shape(), get_class_static(), p_name);
+}
+
+bool SeparationRayShape3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	Variant reverted_value = PhysicsServer3D::get_singleton()->shape_property_get_revert(get_shape(), get_class_static(), p_name);
+	if (reverted_value.get_type() != Variant::NIL) {
+		r_property = reverted_value;
+		return true;
+	}
+
+	return false;
+}
+
 void SeparationRayShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &SeparationRayShape3D::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &SeparationRayShape3D::get_length);

@@ -33,6 +33,83 @@
 #include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/mesh.h"
 
+bool CollisionObject3D::_set(const StringName &p_name, const Variant &p_property) {
+	if (area) {
+		if (PhysicsServer3D::get_singleton()->area_set_property(rid, get_class_static(), p_name, p_property)) {
+			return true;
+		}
+	} else {
+		if (PhysicsServer3D::get_singleton()->body_set_property(rid, get_class_static(), p_name, p_property)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool CollisionObject3D::_get(const StringName &p_name, Variant &r_property) const {
+	Variant value;
+	if (area) {
+		value = PhysicsServer3D::get_singleton()->area_get_property(rid, get_class_static(), p_name);
+	} else {
+		value = PhysicsServer3D::get_singleton()->body_get_property(rid, get_class_static(), p_name);
+	}
+	if (value.get_type() != Variant::NIL) {
+		r_property = value;
+		return true;
+	}
+
+	return false;
+}
+
+void CollisionObject3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	TypedArray<Dictionary> properties;
+	if (area) {
+		properties = PhysicsServer3D::get_singleton()->area_get_property_list(rid, get_class_static());
+	} else {
+		properties = PhysicsServer3D::get_singleton()->body_get_property_list(rid, get_class_static());
+	}
+	for (const Variant &property : properties) {
+		p_list->push_back(PropertyInfo::from_dict(property));
+	}
+}
+
+void CollisionObject3D::_validate_property(PropertyInfo &r_property) const {
+	Dictionary current_property = (Dictionary)r_property;
+	Dictionary modified_property;
+	if (area) {
+		modified_property = PhysicsServer3D::get_singleton()->area_validate_property(rid, get_class_static(), current_property);
+	} else {
+		modified_property = PhysicsServer3D::get_singleton()->body_validate_property(rid, get_class_static(), current_property);
+	}
+	if (!modified_property.is_empty() && modified_property != current_property) {
+		r_property = PropertyInfo::from_dict(modified_property);
+	}
+}
+
+bool CollisionObject3D::_property_can_revert(const StringName &p_name) const {
+	if (area) {
+		return PhysicsServer3D::get_singleton()->area_property_can_revert(rid, get_class_static(), p_name);
+	} else {
+		return PhysicsServer3D::get_singleton()->body_property_can_revert(rid, get_class_static(), p_name);
+	}
+}
+
+bool CollisionObject3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	Variant reverted_value;
+	if (area) {
+		reverted_value = PhysicsServer3D::get_singleton()->area_property_get_revert(rid, get_class_static(), p_name);
+	} else {
+		reverted_value = PhysicsServer3D::get_singleton()->body_property_get_revert(rid, get_class_static(), p_name);
+	}
+	if (reverted_value.get_type() != Variant::NIL) {
+		r_property = reverted_value;
+		return true;
+	}
+
+	return false;
+}
+
 void CollisionObject3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

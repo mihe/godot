@@ -37,11 +37,14 @@ class BoxShape3D : public Shape3D {
 	Vector3 size;
 
 protected:
-	static void _bind_methods();
-#ifndef DISABLE_DEPRECATED
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_property) const;
-#endif // DISABLE_DEPRECATED
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &r_property) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
+	static void _bind_methods();
 
 	virtual void _update_shape() override;
 

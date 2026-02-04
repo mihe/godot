@@ -177,9 +177,15 @@ private:
 	void _snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up);
 
 protected:
+	bool _set(const StringName &p_name, const Variant &p_property);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &p_property) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 };
 
 VARIANT_ENUM_CAST(CharacterBody3D::MotionMode);

@@ -34,6 +34,7 @@
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
+#include "core/variant/typed_array.h"
 #include "servers/physics_3d/physics_server_3d.h"
 
 #define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
@@ -81,6 +82,13 @@ public:
 
 #include "servers/server_wrap_mt_common.h"
 
+	virtual TypedArray<Dictionary> shape_get_property_list(RID p_shape, const StringName &p_class) const override { return physics_server_3d->shape_get_property_list(p_shape, p_class); }
+	virtual Dictionary shape_validate_property(RID p_shape, const StringName &p_class, const Dictionary &p_property) const override { return physics_server_3d->shape_validate_property(p_shape, p_class, p_property); }
+	virtual bool shape_set_property(RID p_shape, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return physics_server_3d->shape_set_property(p_shape, p_class, p_property, p_value); }
+	virtual Variant shape_get_property(RID p_shape, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->shape_get_property(p_shape, p_class, p_property); }
+	virtual bool shape_property_can_revert(RID p_shape, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->shape_property_can_revert(p_shape, p_class, p_property); }
+	virtual Variant shape_property_get_revert(RID p_shape, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->shape_property_get_revert(p_shape, p_class, p_property); }
+
 	//FUNC1RID(shape,ShapeType); todo fix
 	FUNCRID(world_boundary_shape)
 	FUNCRID(separation_ray_shape)
@@ -112,6 +120,12 @@ public:
 	/* SPACE API */
 
 	FUNCRID(space);
+
+	virtual TypedArray<Dictionary> space_get_property_list(RID p_space, const StringName &p_class) const override { return physics_server_3d->space_get_property_list(p_space, p_class); }
+	virtual Dictionary space_validate_property(RID p_space, const StringName &p_class, const Dictionary &p_property) const override { return physics_server_3d->space_validate_property(p_space, p_class, p_property); }
+	virtual bool space_set_property(RID p_space, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return physics_server_3d->space_set_property(p_space, p_class, p_property, p_value); }
+	virtual Variant space_get_property(RID p_space, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->space_get_property(p_space, p_class, p_property); }
+
 	FUNC2(space_set_active, RID, bool);
 	FUNC1RC(bool, space_is_active, RID);
 
@@ -139,6 +153,13 @@ public:
 
 	//FUNC0RID(area);
 	FUNCRID(area);
+
+	virtual TypedArray<Dictionary> area_get_property_list(RID p_area, const StringName &p_class) const override { return physics_server_3d->area_get_property_list(p_area, p_class); }
+	virtual Dictionary area_validate_property(RID p_area, const StringName &p_class, const Dictionary &p_property) const override { return physics_server_3d->area_validate_property(p_area, p_class, p_property); }
+	virtual bool area_set_property(RID p_area, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return physics_server_3d->area_set_property(p_area, p_class, p_property, p_value); }
+	virtual Variant area_get_property(RID p_area, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->area_get_property(p_area, p_class, p_property); }
+	virtual bool area_property_can_revert(RID p_area, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->area_property_can_revert(p_area, p_class, p_property); }
+	virtual Variant area_property_get_revert(RID p_area, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->area_property_get_revert(p_area, p_class, p_property); }
 
 	FUNC2(area_set_space, RID, RID);
 	FUNC1RC(RID, area_get_space, RID);
@@ -179,6 +200,13 @@ public:
 
 	//FUNC2RID(body,BodyMode,bool);
 	FUNCRID(body)
+
+	virtual TypedArray<Dictionary> body_get_property_list(RID p_body, const StringName &p_class) const override { return physics_server_3d->body_get_property_list(p_body, p_class); }
+	virtual Dictionary body_validate_property(RID p_body, const StringName &p_class, const Dictionary &p_property) const override { return physics_server_3d->body_validate_property(p_body, p_class, p_property); }
+	virtual bool body_set_property(RID p_body, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return physics_server_3d->body_set_property(p_body, p_class, p_property, p_value); }
+	virtual Variant body_get_property(RID p_body, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->body_get_property(p_body, p_class, p_property); }
+	virtual bool body_property_can_revert(RID p_body, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->body_property_can_revert(p_body, p_class, p_property); }
+	virtual Variant body_property_get_revert(RID p_body, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->body_property_get_revert(p_body, p_class, p_property); }
 
 	FUNC2(body_set_space, RID, RID);
 	FUNC1RC(RID, body_get_space, RID);
@@ -286,6 +314,13 @@ public:
 
 	FUNCRID(soft_body)
 
+	virtual TypedArray<Dictionary> soft_body_get_property_list(RID p_body, const StringName &p_class) const override { return physics_server_3d->soft_body_get_property_list(p_body, p_class); }
+	virtual Dictionary soft_body_validate_property(RID p_body, const StringName &p_class, const Dictionary &p_property) const override { return physics_server_3d->soft_body_validate_property(p_body, p_class, p_property); }
+	virtual bool soft_body_set_property(RID p_body, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return physics_server_3d->soft_body_set_property(p_body, p_class, p_property, p_value); }
+	virtual Variant soft_body_get_property(RID p_body, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->soft_body_get_property(p_body, p_class, p_property); }
+	virtual bool soft_body_property_can_revert(RID p_body, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->soft_body_property_can_revert(p_body, p_class, p_property); }
+	virtual Variant soft_body_property_get_revert(RID p_body, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->soft_body_property_get_revert(p_body, p_class, p_property); }
+
 	FUNC2(soft_body_update_rendering_server, RID, RequiredParam<PhysicsServer3DRenderingServerHandler>)
 
 	FUNC2(soft_body_set_space, RID, RID)
@@ -343,6 +378,13 @@ public:
 	/* JOINT API */
 
 	FUNCRID(joint)
+
+	virtual TypedArray<Dictionary> joint_get_property_list(RID p_joint, const StringName &p_class) const override { return physics_server_3d->joint_get_property_list(p_joint, p_class); }
+	virtual Dictionary joint_validate_property(RID p_joint, const StringName &p_class, const Dictionary &p_property) const override { return physics_server_3d->joint_validate_property(p_joint, p_class, p_property); }
+	virtual bool joint_set_property(RID p_joint, const StringName &p_class, const StringName &p_property, const Variant &p_value) override { return physics_server_3d->joint_set_property(p_joint, p_class, p_property, p_value); }
+	virtual Variant joint_get_property(RID p_joint, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->joint_get_property(p_joint, p_class, p_property); }
+	virtual bool joint_property_can_revert(RID p_joint, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->joint_property_can_revert(p_joint, p_class, p_property); }
+	virtual Variant joint_property_get_revert(RID p_joint, const StringName &p_class, const StringName &p_property) const override { return physics_server_3d->joint_property_get_revert(p_joint, p_class, p_property); }
 
 	FUNC1(joint_clear, RID)
 

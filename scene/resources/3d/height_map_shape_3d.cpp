@@ -341,6 +341,52 @@ void HeightMapShape3D::update_map_data_from_image(const Ref<Image> &p_image, rea
 	emit_changed();
 }
 
+bool HeightMapShape3D::_set(const StringName &p_name, const Variant &p_property) {
+	if (PhysicsServer3D::get_singleton()->shape_set_property(get_shape(), get_class_static(), p_name, p_property)) {
+		return true;
+	}
+
+	return false;
+}
+
+bool HeightMapShape3D::_get(const StringName &p_name, Variant &r_property) const {
+	Variant value = PhysicsServer3D::get_singleton()->shape_get_property(get_shape(), get_class_static(), p_name);
+	if (value.get_type() != Variant::NIL) {
+		r_property = value;
+		return true;
+	}
+
+	return false;
+}
+
+void HeightMapShape3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const Variant &property : PhysicsServer3D::get_singleton()->shape_get_property_list(get_shape(), get_class_static())) {
+		p_list->push_back(PropertyInfo::from_dict(property));
+	}
+}
+
+void HeightMapShape3D::_validate_property(PropertyInfo &r_property) const {
+	Dictionary current_property = (Dictionary)r_property;
+	Dictionary modified_property = PhysicsServer3D::get_singleton()->shape_validate_property(get_shape(), get_class_static(), current_property);
+	if (!modified_property.is_empty() && modified_property != current_property) {
+		r_property = PropertyInfo::from_dict(modified_property);
+	}
+}
+
+bool HeightMapShape3D::_property_can_revert(const StringName &p_name) const {
+	return PhysicsServer3D::get_singleton()->shape_property_can_revert(get_shape(), get_class_static(), p_name);
+}
+
+bool HeightMapShape3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	Variant reverted_value = PhysicsServer3D::get_singleton()->shape_property_get_revert(get_shape(), get_class_static(), p_name);
+	if (reverted_value.get_type() != Variant::NIL) {
+		r_property = reverted_value;
+		return true;
+	}
+
+	return false;
+}
+
 void HeightMapShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_map_width", "width"), &HeightMapShape3D::set_map_width);
 	ClassDB::bind_method(D_METHOD("get_map_width"), &HeightMapShape3D::get_map_width);

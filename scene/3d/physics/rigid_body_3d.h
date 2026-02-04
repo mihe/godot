@@ -130,10 +130,15 @@ private:
 	void _sync_body_state(PhysicsDirectBodyState3D *p_state);
 
 protected:
+	bool _set(const StringName &p_name, const Variant &p_property);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &p_property) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
 	void _notification(int p_what);
 	static void _bind_methods();
-
-	void _validate_property(PropertyInfo &p_property) const;
 
 	GDVIRTUAL1(_integrate_forces, RequiredParam<PhysicsDirectBodyState3D>)
 

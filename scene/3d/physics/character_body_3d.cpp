@@ -949,15 +949,58 @@ void CharacterBody3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PLATFORM_ON_LEAVE_DO_NOTHING);
 }
 
-void CharacterBody3D::_validate_property(PropertyInfo &p_property) const {
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		return;
+bool CharacterBody3D::_set(const StringName &p_name, const Variant &p_property) {
+	if (PhysicsServer3D::get_singleton()->body_set_property(get_rid(), get_class_static(), p_name, p_property)) {
+		return true;
 	}
-	if (motion_mode == MOTION_MODE_FLOATING) {
-		if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+
+	return false;
+}
+
+bool CharacterBody3D::_get(const StringName &p_name, Variant &r_property) const {
+	Variant value = PhysicsServer3D::get_singleton()->body_get_property(get_rid(), get_class_static(), p_name);
+	if (value.get_type() != Variant::NIL) {
+		r_property = value;
+		return true;
+	}
+
+	return false;
+}
+
+void CharacterBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const Variant &property : PhysicsServer3D::get_singleton()->body_get_property_list(get_rid(), get_class_static())) {
+		p_list->push_back(PropertyInfo::from_dict(property));
+	}
+}
+
+void CharacterBody3D::_validate_property(PropertyInfo &p_property) const {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (motion_mode == MOTION_MODE_FLOATING) {
+			if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
 	}
+
+	Dictionary current_property = (Dictionary)p_property;
+	Dictionary modified_property = PhysicsServer3D::get_singleton()->body_validate_property(get_rid(), get_class_static(), current_property);
+	if (!modified_property.is_empty() && modified_property != current_property) {
+		p_property = PropertyInfo::from_dict(modified_property);
+	}
+}
+
+bool CharacterBody3D::_property_can_revert(const StringName &p_name) const {
+	return PhysicsServer3D::get_singleton()->body_property_can_revert(get_rid(), get_class_static(), p_name);
+}
+
+bool CharacterBody3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	Variant reverted_value = PhysicsServer3D::get_singleton()->body_property_get_revert(get_rid(), get_class_static(), p_name);
+	if (reverted_value.get_type() != Variant::NIL) {
+		r_property = reverted_value;
+		return true;
+	}
+
+	return false;
 }
 
 CharacterBody3D::CharacterBody3D() :

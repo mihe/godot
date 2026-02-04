@@ -807,17 +807,60 @@ void RigidBody3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DAMP_MODE_REPLACE);
 }
 
-void RigidBody3D::_validate_property(PropertyInfo &p_property) const {
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM && p_property.name == "center_of_mass") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+bool RigidBody3D::_set(const StringName &p_name, const Variant &p_property) {
+	if (PhysicsServer3D::get_singleton()->body_set_property(get_rid(), get_class_static(), p_name, p_property)) {
+		return true;
 	}
 
-	if (!contact_monitor && p_property.name == "max_contacts_reported") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	return false;
+}
+
+bool RigidBody3D::_get(const StringName &p_name, Variant &r_property) const {
+	Variant value = PhysicsServer3D::get_singleton()->body_get_property(get_rid(), get_class_static(), p_name);
+	if (value.get_type() != Variant::NIL) {
+		r_property = value;
+		return true;
 	}
+
+	return false;
+}
+
+void RigidBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const Variant &property : PhysicsServer3D::get_singleton()->body_get_property_list(get_rid(), get_class_static())) {
+		p_list->push_back(PropertyInfo::from_dict(property));
+	}
+}
+
+void RigidBody3D::_validate_property(PropertyInfo &p_property) const {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM && p_property.name == "center_of_mass") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (!contact_monitor && p_property.name == "max_contacts_reported") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
+	Dictionary current_property = (Dictionary)p_property;
+	Dictionary modified_property = PhysicsServer3D::get_singleton()->body_validate_property(get_rid(), get_class_static(), current_property);
+	if (!modified_property.is_empty() && modified_property != current_property) {
+		p_property = PropertyInfo::from_dict(modified_property);
+	}
+}
+
+bool RigidBody3D::_property_can_revert(const StringName &p_name) const {
+	return PhysicsServer3D::get_singleton()->body_property_can_revert(get_rid(), get_class_static(), p_name);
+}
+
+bool RigidBody3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	Variant reverted_value = PhysicsServer3D::get_singleton()->body_property_get_revert(get_rid(), get_class_static(), p_name);
+	if (reverted_value.get_type() != Variant::NIL) {
+		r_property = reverted_value;
+		return true;
+	}
+
+	return false;
 }
 
 RigidBody3D::RigidBody3D() :

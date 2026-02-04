@@ -281,24 +281,38 @@ bool CollisionShape3D::get_debug_fill_enabled() const {
 	return debug_fill;
 }
 
-#ifdef DEBUG_ENABLED
-
-bool CollisionShape3D::_property_can_revert(const StringName &p_name) const {
-	if (p_name == "debug_color") {
-		return true;
+bool CollisionShape3D::_set(const StringName &p_name, const Variant &p_property) {
+	if (shape.is_valid()) {
+		if (PhysicsServer3D::get_singleton()->shape_set_property(shape->get_rid(), get_class_static(), p_name, p_property)) {
+			return true;
+		}
 	}
+
 	return false;
 }
 
-bool CollisionShape3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
-	if (p_name == "debug_color") {
-		r_property = _get_default_debug_color();
-		return true;
+bool CollisionShape3D::_get(const StringName &p_name, Variant &r_property) const {
+	if (shape.is_valid()) {
+		Variant value = PhysicsServer3D::get_singleton()->shape_get_property(shape->get_rid(), get_class_static(), p_name);
+		if (value.get_type() != Variant::NIL) {
+			r_property = value;
+			return true;
+		}
 	}
+
 	return false;
+}
+
+void CollisionShape3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	if (shape.is_valid()) {
+		for (const Variant &property : PhysicsServer3D::get_singleton()->shape_get_property_list(shape->get_rid(), get_class_static())) {
+			p_list->push_back(PropertyInfo::from_dict(property));
+		}
+	}
 }
 
 void CollisionShape3D::_validate_property(PropertyInfo &p_property) const {
+#ifdef DEBUG_ENABLED
 	if (p_property.name == "debug_color") {
 		if (debug_color == _get_default_debug_color()) {
 			p_property.usage = PROPERTY_USAGE_DEFAULT & ~PROPERTY_USAGE_STORAGE;
@@ -306,6 +320,48 @@ void CollisionShape3D::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage = PROPERTY_USAGE_DEFAULT;
 		}
 	}
+#endif // DEBUG_ENABLED
+
+	if (shape.is_valid()) {
+		Dictionary current_property = (Dictionary)p_property;
+		Dictionary modified_property = PhysicsServer3D::get_singleton()->shape_validate_property(shape->get_rid(), get_class_static(), current_property);
+		if (!modified_property.is_empty() && modified_property != current_property) {
+			p_property = PropertyInfo::from_dict(modified_property);
+		}
+	}
+}
+
+bool CollisionShape3D::_property_can_revert(const StringName &p_name) const {
+#ifdef DEBUG_ENABLED
+	if (p_name == "debug_color") {
+		return true;
+	}
+#endif // DEBUG_ENABLED
+
+	if (shape.is_valid()) {
+		return PhysicsServer3D::get_singleton()->shape_property_can_revert(shape->get_rid(), get_class_static(), p_name);
+	}
+
+	return false;
+}
+
+bool CollisionShape3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+#ifdef DEBUG_ENABLED
+	if (p_name == "debug_color") {
+		r_property = _get_default_debug_color();
+		return true;
+	}
+#endif // DEBUG_ENABLED
+
+	if (shape.is_valid()) {
+		Variant reverted_value = PhysicsServer3D::get_singleton()->shape_property_get_revert(shape->get_rid(), get_class_static(), p_name);
+		if (reverted_value.get_type() != Variant::NIL) {
+			r_property = reverted_value;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void CollisionShape3D::_shape_changed() {
@@ -316,8 +372,6 @@ void CollisionShape3D::_shape_changed() {
 		set_debug_fill_enabled(shape->get_debug_fill());
 	}
 }
-
-#endif // DEBUG_ENABLED
 
 CollisionShape3D::CollisionShape3D() {
 	//indicator = RenderingServer::get_singleton()->mesh_create();

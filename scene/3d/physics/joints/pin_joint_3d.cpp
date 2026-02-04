@@ -30,6 +30,52 @@
 
 #include "pin_joint_3d.h"
 
+bool PinJoint3D::_set(const StringName &p_name, const Variant &p_property) {
+	if (PhysicsServer3D::get_singleton()->joint_set_property(get_rid(), get_class_static(), p_name, p_property)) {
+		return true;
+	}
+
+	return false;
+}
+
+bool PinJoint3D::_get(const StringName &p_name, Variant &r_property) const {
+	Variant value = PhysicsServer3D::get_singleton()->joint_get_property(get_rid(), get_class_static(), p_name);
+	if (value.get_type() != Variant::NIL) {
+		r_property = value;
+		return true;
+	}
+
+	return false;
+}
+
+void PinJoint3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const Variant &property : PhysicsServer3D::get_singleton()->joint_get_property_list(get_rid(), get_class_static())) {
+		p_list->push_back(PropertyInfo::from_dict(property));
+	}
+}
+
+void PinJoint3D::_validate_property(PropertyInfo &r_property) const {
+	Dictionary current_property = (Dictionary)r_property;
+	Dictionary modified_property = PhysicsServer3D::get_singleton()->joint_validate_property(get_rid(), get_class_static(), current_property);
+	if (!modified_property.is_empty() && modified_property != current_property) {
+		r_property = PropertyInfo::from_dict(modified_property);
+	}
+}
+
+bool PinJoint3D::_property_can_revert(const StringName &p_name) const {
+	return PhysicsServer3D::get_singleton()->joint_property_can_revert(get_rid(), get_class_static(), p_name);
+}
+
+bool PinJoint3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	Variant reverted_value = PhysicsServer3D::get_singleton()->joint_property_get_revert(get_rid(), get_class_static(), p_name);
+	if (reverted_value.get_type() != Variant::NIL) {
+		r_property = reverted_value;
+		return true;
+	}
+
+	return false;
+}
+
 void PinJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &PinJoint3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &PinJoint3D::get_param);

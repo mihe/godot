@@ -30,6 +30,53 @@
 
 #include "joint_3d.h"
 
+bool Joint3D::_set(const StringName &p_name, const Variant &p_property) {
+	if (PhysicsServer3D::get_singleton()->joint_set_property(joint, get_class_static(), p_name, p_property)) {
+		server_property_values[p_name] = p_property;
+		return true;
+	}
+
+	return false;
+}
+
+bool Joint3D::_get(const StringName &p_name, Variant &r_property) const {
+	Variant value = PhysicsServer3D::get_singleton()->joint_get_property(joint, get_class_static(), p_name);
+	if (value.get_type() != Variant::NIL) {
+		r_property = value;
+		return true;
+	}
+
+	return false;
+}
+
+void Joint3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const Variant &property : PhysicsServer3D::get_singleton()->joint_get_property_list(joint, get_class_static())) {
+		p_list->push_back(PropertyInfo::from_dict(property));
+	}
+}
+
+void Joint3D::_validate_property(PropertyInfo &r_property) const {
+	Dictionary current_property = (Dictionary)r_property;
+	Dictionary modified_property = PhysicsServer3D::get_singleton()->joint_validate_property(joint, get_class_static(), current_property);
+	if (!modified_property.is_empty() && modified_property != current_property) {
+		r_property = PropertyInfo::from_dict(modified_property);
+	}
+}
+
+bool Joint3D::_property_can_revert(const StringName &p_name) const {
+	return PhysicsServer3D::get_singleton()->joint_property_can_revert(joint, get_class_static(), p_name);
+}
+
+bool Joint3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	Variant reverted_value = PhysicsServer3D::get_singleton()->joint_property_get_revert(joint, get_class_static(), p_name);
+	if (reverted_value.get_type() != Variant::NIL) {
+		r_property = reverted_value;
+		return true;
+	}
+
+	return false;
+}
+
 void Joint3D::_disconnect_signals() {
 	Node *node_a = get_node_or_null(a);
 	PhysicsBody3D *body_a = Object::cast_to<PhysicsBody3D>(node_a);
@@ -182,6 +229,10 @@ void Joint3D::_notification(int p_what) {
 			_update_joint(true);
 		} break;
 	}
+}
+
+void Joint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
+	// ...
 }
 
 void Joint3D::set_exclude_nodes_from_collision(bool p_enable) {

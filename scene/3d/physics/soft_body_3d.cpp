@@ -140,6 +140,10 @@ bool SoftBody3D::_set(const StringName &p_name, const Variant &p_value) {
 		return _set_property_pinned_points_attachment(idx, what, p_value);
 	}
 
+	if (PhysicsServer3D::get_singleton()->soft_body_set_property(get_physics_rid(), get_class_static(), p_name, p_value)) {
+		return true;
+	}
+
 	return false;
 }
 
@@ -167,6 +171,12 @@ bool SoftBody3D::_get(const StringName &p_name, Variant &r_ret) const {
 		return _get_property_pinned_points(idx, what, r_ret);
 	}
 
+	Variant value = PhysicsServer3D::get_singleton()->soft_body_get_property(get_physics_rid(), get_class_static(), p_name);
+	if (value.get_type() != Variant::NIL) {
+		r_ret = value;
+		return true;
+	}
+
 	return false;
 }
 
@@ -181,6 +191,32 @@ void SoftBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::NODE_PATH, prefix + PNAME("spatial_attachment_path")));
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, prefix + PNAME("offset")));
 	}
+
+	for (const Variant &property : PhysicsServer3D::get_singleton()->soft_body_get_property_list(get_physics_rid(), get_class_static())) {
+		p_list->push_back(PropertyInfo::from_dict(property));
+	}
+}
+
+void SoftBody3D::_validate_property(PropertyInfo &r_property) const {
+	Dictionary current_property = (Dictionary)r_property;
+	Dictionary modified_property = PhysicsServer3D::get_singleton()->soft_body_validate_property(get_physics_rid(), get_class_static(), current_property);
+	if (!modified_property.is_empty() && modified_property != current_property) {
+		r_property = PropertyInfo::from_dict(modified_property);
+	}
+}
+
+bool SoftBody3D::_property_can_revert(const StringName &p_name) const {
+	return PhysicsServer3D::get_singleton()->soft_body_property_can_revert(get_physics_rid(), get_class_static(), p_name);
+}
+
+bool SoftBody3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	Variant reverted_value = PhysicsServer3D::get_singleton()->soft_body_property_get_revert(get_physics_rid(), get_class_static(), p_name);
+	if (reverted_value.get_type() != Variant::NIL) {
+		r_property = reverted_value;
+		return true;
+	}
+
+	return false;
 }
 
 bool SoftBody3D::_set_property_pinned_points_indices(const Array &p_indices) {

@@ -1257,6 +1257,30 @@ RID JoltPhysicsServer3D::joint_create() {
 	return rid;
 }
 
+TypedArray<Dictionary> JoltPhysicsServer3D::joint_get_property_list(RID p_joint, const StringName &p_class) const {
+	return TypedArray<Dictionary>();
+}
+
+Dictionary JoltPhysicsServer3D::joint_validate_property(RID p_joint, const StringName &p_class, const Dictionary &p_property) const {
+	return Dictionary();
+}
+
+bool JoltPhysicsServer3D::joint_set_property(RID p_joint, const StringName &p_class, const StringName &p_property, const Variant &p_value) {
+	return false;
+}
+
+Variant JoltPhysicsServer3D::joint_get_property(RID p_joint, const StringName &p_class, const StringName &p_property) const {
+	return Variant();
+}
+
+bool JoltPhysicsServer3D::joint_property_can_revert(RID p_joint, const StringName &p_class, const StringName &p_property) const {
+	return false;
+}
+
+Variant JoltPhysicsServer3D::joint_property_get_revert(RID p_joint, const StringName &p_class, const StringName &p_property) const {
+	return Variant();
+}
+
 void JoltPhysicsServer3D::joint_clear(RID p_joint) {
 	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);

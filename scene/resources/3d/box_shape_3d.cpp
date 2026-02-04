@@ -76,25 +76,67 @@ void BoxShape3D::_update_shape() {
 	Shape3D::_update_shape();
 }
 
-#ifndef DISABLE_DEPRECATED
 bool BoxShape3D::_set(const StringName &p_name, const Variant &p_value) {
+#ifndef DISABLE_DEPRECATED
 	if (p_name == "extents") { // Compatibility with Godot 3.x.
 		// Convert to `size`, twice as big.
 		set_size((Vector3)p_value * 2);
 		return true;
 	}
+#endif // DISABLE_DEPRECATED
+
+	if (PhysicsServer3D::get_singleton()->shape_set_property(get_shape(), get_class_static(), p_name, p_value)) {
+		return true;
+	}
+
 	return false;
 }
 
 bool BoxShape3D::_get(const StringName &p_name, Variant &r_property) const {
+#ifndef DISABLE_DEPRECATED
 	if (p_name == "extents") { // Compatibility with Godot 3.x.
 		// Convert to `extents`, half as big.
 		r_property = size / 2;
 		return true;
 	}
+#endif // DISABLE_DEPRECATED
+
+	Variant value = PhysicsServer3D::get_singleton()->shape_get_property(get_shape(), get_class_static(), p_name);
+	if (value.get_type() != Variant::NIL) {
+		r_property = value;
+		return true;
+	}
+
 	return false;
 }
-#endif // DISABLE_DEPRECATED
+
+void BoxShape3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const Variant &property : PhysicsServer3D::get_singleton()->shape_get_property_list(get_shape(), get_class_static())) {
+		p_list->push_back(PropertyInfo::from_dict(property));
+	}
+}
+
+void BoxShape3D::_validate_property(PropertyInfo &r_property) const {
+	Dictionary current_property = (Dictionary)r_property;
+	Dictionary modified_property = PhysicsServer3D::get_singleton()->shape_validate_property(get_shape(), get_class_static(), current_property);
+	if (!modified_property.is_empty() && modified_property != current_property) {
+		r_property = PropertyInfo::from_dict(modified_property);
+	}
+}
+
+bool BoxShape3D::_property_can_revert(const StringName &p_name) const {
+	return PhysicsServer3D::get_singleton()->shape_property_can_revert(get_shape(), get_class_static(), p_name);
+}
+
+bool BoxShape3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	Variant reverted_value = PhysicsServer3D::get_singleton()->shape_property_get_revert(get_shape(), get_class_static(), p_name);
+	if (reverted_value.get_type() != Variant::NIL) {
+		r_property = reverted_value;
+		return true;
+	}
+
+	return false;
+}
 
 void BoxShape3D::set_size(const Vector3 &p_size) {
 	ERR_FAIL_COND_MSG(p_size.x < 0 || p_size.y < 0 || p_size.z < 0, "BoxShape3D size cannot be negative.");
