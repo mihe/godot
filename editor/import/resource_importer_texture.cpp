@@ -935,23 +935,6 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 			_save_ctex(image, p_save_path + ".ctex", COMPRESS_VRAM_UNCOMPRESSED, lossy, basisu_params, Image::COMPRESS_S3TC /* This is ignored. */, Image::COMPRESS_PROFILE_BALANCED /* This is ignored. */,
 					mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 		} else {
-			if (can_s3tc_bptc) {
-				Image::CompressMode image_compress_mode;
-				String image_compress_format;
-				Image::CompressProfile image_compress_profile = (Image::CompressProfile)(high_quality_mode);
-				if (high_quality || is_hdr) {
-					image_compress_mode = Image::COMPRESS_BPTC;
-					image_compress_format = "bptc";
-				} else {
-					image_compress_mode = Image::COMPRESS_S3TC;
-					image_compress_format = "s3tc";
-				}
-
-				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, basisu_params, image_compress_mode, image_compress_profile, mipmaps,
-						stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
-				r_platform_variants->push_back(image_compress_format);
-			}
-
 			if (can_etc2_astc) {
 				Image::CompressMode image_compress_mode;
 				String image_compress_format;
@@ -966,6 +949,23 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 
 				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, basisu_params, image_compress_mode, image_compress_profile, mipmaps, stream, detect_3d,
 						detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+				r_platform_variants->push_back(image_compress_format);
+			}
+
+			if (can_s3tc_bptc) {
+				Image::CompressMode image_compress_mode;
+				String image_compress_format;
+				Image::CompressProfile image_compress_profile = (Image::CompressProfile)(high_quality_mode);
+				if (high_quality || is_hdr) {
+					image_compress_mode = Image::COMPRESS_BPTC;
+					image_compress_format = "bptc";
+				} else {
+					image_compress_mode = Image::COMPRESS_S3TC;
+					image_compress_format = "s3tc";
+				}
+
+				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, basisu_params, image_compress_mode, image_compress_profile, mipmaps,
+						stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 				r_platform_variants->push_back(image_compress_format);
 			}
 		}
