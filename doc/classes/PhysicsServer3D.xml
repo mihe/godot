@@ -494,7 +494,6 @@
 			<param index="1" name="excepted_body" type="RID" />
 			<description>
 				Removes a body from the list of bodies exempt from collisions.
-				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
 			</description>
 		</method>
 		<method name="body_remove_shape">
@@ -575,8 +574,9 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], the continuous collision detection mode is enabled.
+				Sets whether the body uses continuous collision detection.
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
+				[b]Note:[/b] In both Godot Physics and Jolt Physics, continuous collision detection only considers the linear velocity of the body, not angular velocity, so bodies with a high enough angular velocity can still go through thin or hollow shapes, like [ConcavePolygonShape3D].
 			</description>
 		</method>
 		<method name="body_set_force_integration_callback">

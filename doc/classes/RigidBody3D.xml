@@ -166,6 +166,7 @@
 		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection" default="false">
 			If [code]true[/code], continuous collision detection is used.
 			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses fewer impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
+			[b]Note:[/b] In both Godot Physics and Jolt Physics, continuous collision detection only considers the linear velocity of the body, not angular velocity, so bodies with a high enough angular velocity can still go through thin or hollow shapes, like [ConcavePolygonShape3D].
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
 			If [code]true[/code], the standard force integration (like gravity or damping) will be disabled for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] method, if that virtual method is overridden.
