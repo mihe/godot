@@ -1080,6 +1080,7 @@ class ObjectDB {
 #define OBJECTDB_SLOT_MAX_POSITION_MASK ((uint64_t(1) << OBJECTDB_SLOT_MAX_POSITION_BITS) - 1)
 #define OBJECTDB_REFERENCE_BIT (uint64_t(1) << (OBJECTDB_SLOT_MAX_POSITION_BITS + OBJECTDB_VALIDATOR_BITS))
 #define OBJECTDB_MAX_BLOCKS 32
+#define OBJECTDB_MAGAZINE_SIZE 64
 
 	union NextFree {
 		uint32_t position : OBJECTDB_SLOT_MAX_POSITION_BITS;
@@ -1096,6 +1097,15 @@ class ObjectDB {
 		Object *object = nullptr;
 	};
 
+	struct ThreadLocalMagazine {
+		NextFree alloc[OBJECTDB_MAGAZINE_SIZE]; // Slots pre-popped from the global free-list, ready for add_instance.
+		uint32_t alloc_count = 0;
+		NextFree freed[OBJECTDB_MAGAZINE_SIZE]; // Slots freed by remove_instance, pending return to the global free-list.
+		uint32_t freed_count = 0;
+	};
+
+	static thread_local ThreadLocalMagazine tl_magazine;
+
 	static ObjectSlot *blocks[OBJECTDB_MAX_BLOCKS];
 	static const uint32_t blocks_max_sizes[OBJECTDB_MAX_BLOCKS];
 
@@ -1106,7 +1116,8 @@ class ObjectDB {
 	static uint32_t block_max;
 
 	static BinaryMutex mutex;
-	static uint64_t validator_counter;
+	static SafeNumeric<uint64_t> validator_counter;
+	static SafeNumeric<int32_t> live_count;
 
 	friend class Object;
 	friend void unregister_core_types();

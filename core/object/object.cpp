@@ -2488,11 +2488,10 @@ void postinitialize_handler(Object *p_object) {
 void ObjectDB::debug_objects(DebugFunc p_func, void *p_user_data) {
 	mutex.lock();
 
-	for (uint32_t i = 1; i < block_count; i++) {
+	for (uint32_t i = 1; i <= block_max; i++) {
 		for (uint32_t j = 0; j < blocks_max_sizes[i]; j++) {
 			if (blocks[i][j].validator) {
-				Object *obj = blocks[i][j].object;
-				p_func(obj, p_user_data);
+				p_func(blocks[i][j].object, p_user_data);
 			}
 		}
 	}
@@ -2551,7 +2550,9 @@ uint32_t ObjectDB::slot_count = 0;
 uint32_t ObjectDB::block_count = 0;
 uint32_t ObjectDB::slot_max = 0;
 uint32_t ObjectDB::block_max = 0;
-uint64_t ObjectDB::validator_counter = 0;
+SafeNumeric<uint64_t> ObjectDB::validator_counter;
+SafeNumeric<int32_t> ObjectDB::live_count;
+thread_local ObjectDB::ThreadLocalMagazine ObjectDB::tl_magazine;
 
 const uint32_t ObjectDB::blocks_max_sizes[OBJECTDB_MAX_BLOCKS] = {
 	0,
@@ -2591,58 +2592,81 @@ const uint32_t ObjectDB::blocks_max_sizes[OBJECTDB_MAX_BLOCKS] = {
 ObjectDB::ObjectSlot *ObjectDB::blocks[OBJECTDB_MAX_BLOCKS] = { nullptr };
 
 int ObjectDB::get_object_count() {
-	return slot_count;
+	return live_count.get();
 }
 
 ObjectID ObjectDB::add_instance(Object *p_object) {
-	mutex.lock();
-	if (slot_count == blocks_max_sizes[block_count] && blocks[block_count + 1] != nullptr) {
-		slot_count = 0;
-		block_count++;
-	}
+	// Fast path: pop a pre-fetched slot from the thread-local alloc magazine (no lock needed).
+	if (unlikely(tl_magazine.alloc_count == 0)) {
+		// Slow path: take the global mutex once to drain pending frees AND refill the alloc magazine.
+		mutex.lock();
 
-	if (unlikely(slot_count == blocks_max_sizes[block_max])) {
-		block_max++;
-		CRASH_COND(block_max == OBJECTDB_MAX_BLOCKS);
-		CRASH_COND(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
-		blocks[block_max] = (ObjectSlot *)memalloc(sizeof(ObjectSlot) * blocks_max_sizes[block_max]);
-		uint32_t new_slot_max = blocks_max_sizes[block_max];
-		for (uint32_t i = 0; i < new_slot_max; i++) {
-			blocks[block_max][i].object = nullptr;
-			blocks[block_max][i].is_ref_counted = false;
-			blocks[block_max][i].next_free.block_number = block_max;
-			blocks[block_max][i].next_free.block_position = i;
-			blocks[block_max][i].validator = 0;
+		// Drain the freed magazine back to the global free-list.
+		for (uint32_t i = 0; i < tl_magazine.freed_count; i++) {
+			if (slot_count == 0) {
+				block_count--;
+				slot_count = blocks_max_sizes[block_count];
+			}
+			slot_count--;
+			blocks[block_count][slot_count].next_free = tl_magazine.freed[i];
 		}
-		slot_max = new_slot_max;
-		block_count = block_max;
-		slot_count = 0;
+		tl_magazine.freed_count = 0;
+
+		// Refill the alloc magazine with up to OBJECTDB_MAGAZINE_SIZE slots.
+		uint32_t fill = 0;
+		while (fill < OBJECTDB_MAGAZINE_SIZE) {
+			// Advance to the next block if the current one is exhausted but the next is already allocated.
+			if (slot_count == blocks_max_sizes[block_count] && blocks[block_count + 1] != nullptr) {
+				slot_count = 0;
+				block_count++;
+			}
+			// Allocate a new block if we've used all available slots.
+			if (unlikely(slot_count == blocks_max_sizes[block_max])) {
+				block_max++;
+				CRASH_COND(block_max == OBJECTDB_MAX_BLOCKS);
+				CRASH_COND(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
+				blocks[block_max] = (ObjectSlot *)memalloc(sizeof(ObjectSlot) * blocks_max_sizes[block_max]);
+				for (uint32_t i = 0; i < blocks_max_sizes[block_max]; i++) {
+					blocks[block_max][i].object = nullptr;
+					blocks[block_max][i].is_ref_counted = false;
+					blocks[block_max][i].next_free.block_number = block_max;
+					blocks[block_max][i].next_free.block_position = i;
+					blocks[block_max][i].validator = 0;
+				}
+				slot_max = blocks_max_sizes[block_max];
+				block_count = block_max;
+				slot_count = 0;
+			}
+			tl_magazine.alloc[fill++] = blocks[block_count][slot_count++].next_free;
+		}
+		tl_magazine.alloc_count = fill;
+
+		mutex.unlock();
 	}
 
-	NextFree slot = blocks[block_count][slot_count].next_free;
-	Object *o = blocks[slot.block_number][slot.block_position].object;
-	if (o != nullptr) {
-		mutex.unlock();
-		ERR_FAIL_COND_V(o != nullptr, ObjectID());
-	}
+	// Pop a slot from the thread-local alloc magazine.
+	NextFree slot = tl_magazine.alloc[--tl_magazine.alloc_count];
+
+	DEV_ASSERT(blocks[slot.block_number][slot.block_position].object == nullptr);
+
 	blocks[slot.block_number][slot.block_position].object = p_object;
 	blocks[slot.block_number][slot.block_position].is_ref_counted = p_object->is_ref_counted();
-	validator_counter = (validator_counter + 1) & OBJECTDB_VALIDATOR_MASK;
-	if (unlikely(validator_counter == 0)) {
-		validator_counter = 1;
-	}
-	blocks[slot.block_number][slot.block_position].validator = validator_counter;
 
-	uint64_t id = validator_counter;
+	// Assign a unique non-zero validator atomically, without holding the mutex.
+	uint64_t v;
+	do {
+		v = validator_counter.increment() & OBJECTDB_VALIDATOR_MASK;
+	} while (unlikely(v == 0));
+	blocks[slot.block_number][slot.block_position].validator = v;
+
+	uint64_t id = v;
 	id <<= OBJECTDB_SLOT_MAX_POSITION_BITS;
 	id |= uint64_t(slot.position);
-
 	if (p_object->is_ref_counted()) {
 		id |= OBJECTDB_REFERENCE_BIT;
 	}
 
-	slot_count++;
-	mutex.unlock();
+	live_count.increment();
 	return ObjectID(id);
 }
 
@@ -2651,37 +2675,37 @@ void ObjectDB::remove_instance(Object *p_object) {
 	NextFree slot;
 	slot.position = t & OBJECTDB_SLOT_MAX_POSITION_MASK;
 
-	mutex.lock();
-
 #ifdef DEBUG_ENABLED
-
-	if (blocks[slot.block_number][slot.block_position].object != p_object) {
-		mutex.unlock();
-		ERR_FAIL_COND(blocks[slot.block_number][slot.block_position].object != p_object);
-	}
+	ERR_FAIL_COND(blocks[slot.block_number][slot.block_position].object != p_object);
 	{
 		uint64_t validator = (t >> OBJECTDB_SLOT_MAX_POSITION_BITS) & OBJECTDB_VALIDATOR_MASK;
-		if (blocks[slot.block_number][slot.block_position].validator != validator) {
-			mutex.unlock();
-			ERR_FAIL_COND(blocks[slot.block_number][slot.block_position].validator != validator);
-		}
+		ERR_FAIL_COND(blocks[slot.block_number][slot.block_position].validator != validator);
 	}
-
 #endif
-	//decrease slot count
-	if (slot_count == 0) {
-		block_count--;
-		slot_count = blocks_max_sizes[block_count];
-	}
-	slot_count--;
-	//set the free slot properly
-	blocks[block_count][slot_count].next_free = slot;
-	//invalidate, so checks against it fail
+
+	// Invalidate the slot before pushing it to the freed magazine.
 	blocks[slot.block_number][slot.block_position].validator = 0;
 	blocks[slot.block_number][slot.block_position].is_ref_counted = false;
 	blocks[slot.block_number][slot.block_position].object = nullptr;
 
-	mutex.unlock();
+	live_count.decrement();
+
+	// Fast path: there is room in the thread-local freed magazine.
+	if (unlikely(tl_magazine.freed_count == OBJECTDB_MAGAZINE_SIZE)) {
+		// Slow path: magazine full, drain it all back to the global free-list under the mutex.
+		mutex.lock();
+		for (uint32_t i = 0; i < tl_magazine.freed_count; i++) {
+			if (slot_count == 0) {
+				block_count--;
+				slot_count = blocks_max_sizes[block_count];
+			}
+			slot_count--;
+			blocks[block_count][slot_count].next_free = tl_magazine.freed[i];
+		}
+		tl_magazine.freed_count = 0;
+		mutex.unlock();
+	}
+	tl_magazine.freed[tl_magazine.freed_count++] = slot;
 }
 
 void ObjectDB::setup() {
@@ -2700,7 +2724,7 @@ void ObjectDB::cleanup() {
 			MethodBind *node_get_path = ClassDB::get_method("Node", "get_path");
 			MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
 			Callable::CallError call_error;
-			for (uint32_t i = 1; i < block_count; i++) {
+			for (uint32_t i = 1; i <= block_max; i++) {
 				for (uint32_t j = 0; j < blocks_max_sizes[i]; j++) {
 					if (blocks[i][j].validator) {
 						Object *obj = blocks[i][j].object;
@@ -2723,7 +2747,7 @@ void ObjectDB::cleanup() {
 			print_line("Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).");
 		}
 	}
-	for (uint32_t i = 1; i < block_count; i++) {
+	for (uint32_t i = 1; i <= block_max; i++) {
 		memfree(blocks[i]);
 	}
 	mutex.unlock();
