@@ -2461,19 +2461,64 @@ bool ClassDB::is_default_array_arg(const Array &p_array) {
 
 //
 
+void ClassDB::Locker::_read_lock() {
+	uint32_t slot = Thread::get_caller_id() & (READER_SLOT_COUNT - 1);
+
+	while (true) {
+		while (reader_slots[slot].state.get() & WRITER_BIT) {
+			Thread::yield();
+		}
+
+		uint32_t prev = reader_slots[slot].state.postincrement();
+		if (!(prev & WRITER_BIT)) {
+			return;
+		}
+
+		reader_slots[slot].state.decrement();
+		Thread::yield();
+	}
+}
+
+void ClassDB::Locker::_read_unlock() {
+	uint32_t slot = Thread::get_caller_id() & (READER_SLOT_COUNT - 1);
+	reader_slots[slot].state.decrement();
+}
+
+void ClassDB::Locker::_write_lock() {
+	write_mutex.lock();
+
+	for (uint32_t i = 0; i < READER_SLOT_COUNT; i++) {
+		reader_slots[i].state.bit_or(WRITER_BIT);
+	}
+
+	for (uint32_t i = 0; i < READER_SLOT_COUNT; i++) {
+		while (reader_slots[i].state.get() & READER_MASK) {
+			Thread::yield();
+		}
+	}
+}
+
+void ClassDB::Locker::_write_unlock() {
+	for (uint32_t i = 0; i < READER_SLOT_COUNT; i++) {
+		reader_slots[i].state.bit_and(~WRITER_BIT);
+	}
+
+	write_mutex.unlock();
+}
+
 ClassDB::Locker::Lock::Lock(Locker::State p_state) {
 	DEV_ASSERT(p_state != STATE_UNLOCKED);
 	if (p_state == STATE_READ) {
 		if (Locker::thread_state == STATE_UNLOCKED) {
 			state = STATE_READ;
 			Locker::thread_state = STATE_READ;
-			Locker::lock.read_lock();
+			Locker::_read_lock();
 		}
 	} else if (p_state == STATE_WRITE) {
 		if (Locker::thread_state == STATE_UNLOCKED) {
 			state = STATE_WRITE;
 			Locker::thread_state = STATE_WRITE;
-			Locker::lock.write_lock();
+			Locker::_write_lock();
 		} else if (Locker::thread_state == STATE_READ) {
 			CRASH_NOW_MSG("Lock can't be upgraded from read to write.");
 		}
@@ -2482,10 +2527,10 @@ ClassDB::Locker::Lock::Lock(Locker::State p_state) {
 
 ClassDB::Locker::Lock::~Lock() {
 	if (state == STATE_READ) {
-		Locker::lock.read_unlock();
+		Locker::_read_unlock();
 		Locker::thread_state = STATE_UNLOCKED;
 	} else if (state == STATE_WRITE) {
-		Locker::lock.write_unlock();
+		Locker::_write_unlock();
 		Locker::thread_state = STATE_UNLOCKED;
 	}
 }

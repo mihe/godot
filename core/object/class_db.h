@@ -32,6 +32,7 @@
 
 #include "core/object/method_bind.h"
 #include "core/object/object.h"
+#include "core/os/mutex.h"
 #include "core/os/rw_lock.h"
 #include "core/string/print_string.h"
 
@@ -189,8 +190,22 @@ public:
 		};
 
 	private:
-		inline static RWLock lock;
+		struct alignas(Thread::CACHE_LINE_BYTES) ReaderSlot {
+			SafeNumeric<uint32_t> state;
+		};
+
+		static constexpr uint32_t READER_SLOT_COUNT = 32; // Must be a power-of-two.
+		static constexpr uint32_t WRITER_BIT = 1u << 31;
+		static constexpr uint32_t READER_MASK = ~WRITER_BIT;
+
+		inline static BinaryMutex write_mutex;
+		inline static ReaderSlot reader_slots[READER_SLOT_COUNT];
 		inline thread_local static State thread_state = STATE_UNLOCKED;
+
+		static void _read_lock();
+		static void _read_unlock();
+		static void _write_lock();
+		static void _write_unlock();
 
 	public:
 		class Lock {
