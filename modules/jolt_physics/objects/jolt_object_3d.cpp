@@ -39,8 +39,8 @@ void JoltObject3D::_remove_from_space() {
 		return;
 	}
 
-	space->remove_object(jolt_body->GetID());
-	jolt_body = nullptr;
+	space->remove_object(*this);
+	previous_space_rid = space->get_rid();
 }
 
 void JoltObject3D::_reset_space() {
@@ -69,10 +69,19 @@ void JoltObject3D::_collision_mask_changed() {
 }
 
 JoltObject3D::JoltObject3D(ObjectType p_object_type) :
+		needs_destruction_element(this),
 		object_type(p_object_type) {
 }
 
-JoltObject3D::~JoltObject3D() = default;
+JoltObject3D::~JoltObject3D() {
+	if (jolt_body != nullptr) {
+		// Objects always have their `space` cleared before being freed, so we have to rely on `previous_space_rid` instead.
+		JoltSpace3D *previous_space = JoltPhysicsServer3D::get_singleton()->get_space(previous_space_rid);
+		if (previous_space != nullptr) {
+			destroy_jolt_body(previous_space);
+		}
+	}
+}
 
 Object *JoltObject3D::get_instance() const {
 	return ObjectDB::get_instance(instance_id);
@@ -132,6 +141,31 @@ bool JoltObject3D::can_interact_with(const JoltObject3D &p_other) const {
 	} else {
 		ERR_FAIL_V_MSG(false, vformat("Unhandled object type: '%d'. This should not happen. Please report this.", p_other.get_type()));
 	}
+}
+
+void JoltObject3D::enqueue_needs_destruction(JoltSpace3D *p_space) {
+	if (p_space != nullptr) {
+		p_space->enqueue_needs_destruction(&needs_destruction_element);
+	}
+}
+
+void JoltObject3D::dequeue_needs_destruction(JoltSpace3D *p_space) {
+	if (p_space != nullptr) {
+		p_space->dequeue_needs_destruction(&needs_destruction_element);
+	}
+}
+
+void JoltObject3D::destroy_jolt_body(JoltSpace3D *p_space, bool p_unassign_id) {
+	JPH::BodyInterface &body_iface = p_space->get_body_iface();
+
+	if (p_unassign_id) {
+		body_iface.UnassignBodyID(jolt_body->GetID());
+		body_iface.DestroyBodyWithoutID(jolt_body);
+	} else {
+		body_iface.DestroyBody(jolt_body->GetID());
+	}
+
+	jolt_body = nullptr;
 }
 
 String JoltObject3D::to_string() const {

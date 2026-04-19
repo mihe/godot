@@ -117,15 +117,12 @@ void JoltBody3D::_add_to_space() {
 
 	jolt_settings->SetShape(jolt_shape);
 
-	JPH::Body *new_jolt_body = space->add_object(*this, *jolt_settings, sleep_initially);
-	if (new_jolt_body == nullptr) {
-		return;
+	jolt_body = space->add_object(*this, *jolt_settings, sleep_initially);
+
+	if (jolt_body != nullptr) {
+		delete jolt_settings;
+		jolt_settings = nullptr;
 	}
-
-	jolt_body = new_jolt_body;
-
-	delete jolt_settings;
-	jolt_settings = nullptr;
 }
 
 void JoltBody3D::_enqueue_call_queries() {
@@ -389,17 +386,12 @@ void JoltBody3D::_destroy_joint_constraints() {
 	}
 }
 
-void JoltBody3D::_exit_all_areas() {
+void JoltBody3D::_clear_areas() {
 	if (!in_space()) {
 		return;
 	}
 
-	for (JoltArea3D *area : areas) {
-		area->body_exited(jolt_body->GetID(), false);
-	}
-
 	areas.clear();
-
 	_areas_changed();
 }
 
@@ -435,7 +427,7 @@ void JoltBody3D::_space_changing() {
 	sleep_initially = is_sleeping();
 
 	_destroy_joint_constraints();
-	_exit_all_areas();
+	_clear_areas();
 	_dequeue_call_queries();
 }
 

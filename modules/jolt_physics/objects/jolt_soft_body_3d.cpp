@@ -110,15 +110,12 @@ void JoltSoftBody3D::_add_to_space() {
 	jolt_settings->mCollisionGroup = JPH::CollisionGroup(nullptr, group_id, sub_group_id);
 	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::max_linear_velocity;
 
-	JPH::Body *new_jolt_body = space->add_object(*this, *jolt_settings);
-	if (new_jolt_body == nullptr) {
-		return;
+	jolt_body = space->add_object(*this, *jolt_settings);
+
+	if (jolt_body != nullptr) {
+		delete jolt_settings;
+		jolt_settings = nullptr;
 	}
-
-	jolt_body = new_jolt_body;
-
-	delete jolt_settings;
-	jolt_settings = nullptr;
 }
 
 JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {

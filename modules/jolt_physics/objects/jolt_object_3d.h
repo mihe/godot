@@ -36,6 +36,7 @@
 #include "core/object/object.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid.h"
+#include "core/templates/self_list.h"
 
 #include <Jolt/Jolt.h>
 
@@ -60,7 +61,11 @@ public:
 	};
 
 protected:
+	SelfList<JoltObject3D> needs_destruction_element;
+
 	RID rid;
+	RID previous_space_rid;
+
 	ObjectID instance_id;
 	JoltSpace3D *space = nullptr;
 	JPH::Body *jolt_body = nullptr;
@@ -125,6 +130,8 @@ public:
 	void set_space(JoltSpace3D *p_space);
 	bool in_space() const { return space != nullptr && jolt_body != nullptr; }
 
+	RID get_previous_space_rid() const { return previous_space_rid; }
+
 	uint32_t get_collision_layer() const { return collision_layer; }
 	void set_collision_layer(uint32_t p_layer);
 
@@ -144,6 +151,10 @@ public:
 	virtual bool can_interact_with(const JoltArea3D &p_other) const = 0;
 
 	virtual bool reports_contacts() const = 0;
+
+	void enqueue_needs_destruction(JoltSpace3D *p_space);
+	void dequeue_needs_destruction(JoltSpace3D *p_space);
+	void destroy_jolt_body(JoltSpace3D *p_space, bool p_unassign_id = false);
 
 	virtual void pre_step(float p_step) {}
 

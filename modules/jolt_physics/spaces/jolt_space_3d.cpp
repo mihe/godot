@@ -63,7 +63,32 @@ constexpr double SPACE_DEFAULT_SOLVER_ITERATIONS = 8;
 
 } // namespace
 
+JPH::BodyID JoltSpace3D::_recycle_jolt_body(JoltObject3D &p_object) {
+	JPH::BodyID previous_jolt_id;
+
+	JPH::Body *previous_jolt_body = p_object.get_jolt_body();
+	if (previous_jolt_body != nullptr) {
+		JoltSpace3D *previous_space = JoltPhysicsServer3D::get_singleton()->get_space(p_object.get_previous_space_rid());
+		if (previous_space == this) {
+			previous_jolt_id = previous_jolt_body->GetID();
+			p_object.destroy_jolt_body(this, true);
+		} else if (previous_space != nullptr) {
+			p_object.destroy_jolt_body(previous_space);
+		}
+
+		p_object.dequeue_needs_destruction(previous_space);
+	}
+
+	return previous_jolt_id;
+}
+
 void JoltSpace3D::_pre_step(float p_step) {
+	while (needs_destruction_list.first()) {
+		JoltObject3D *object = needs_destruction_list.first()->self();
+		needs_destruction_list.remove(needs_destruction_list.first());
+		object->destroy_jolt_body(this);
+	}
+
 	flush_pending_objects();
 
 	while (needs_optimization_list.first()) {
@@ -161,6 +186,12 @@ JoltSpace3D::JoltSpace3D(JPH::JobSystem *p_job_system, JPH::TempAllocator *p_tem
 }
 
 JoltSpace3D::~JoltSpace3D() {
+	needs_destruction_list.clear();
+	needs_optimization_list.clear();
+	shapes_changed_list.clear();
+	area_call_queries_list.clear();
+	body_call_queries_list.clear();
+
 	if (direct_state != nullptr) {
 		memdelete(direct_state);
 		direct_state = nullptr;
@@ -384,9 +415,11 @@ JoltPhysicsDirectSpaceState3D *JoltSpace3D::get_direct_state() {
 	return direct_state;
 }
 
-JPH::Body *JoltSpace3D::add_object(const JoltObject3D &p_object, const JPH::BodyCreationSettings &p_settings, bool p_sleeping) {
+JPH::Body *JoltSpace3D::add_object(JoltObject3D &p_object, const JPH::BodyCreationSettings &p_settings, bool p_sleeping) {
 	JPH::BodyInterface &body_iface = get_body_iface();
-	JPH::Body *jolt_body = body_iface.CreateBody(p_settings);
+	JPH::BodyID previous_jolt_id = _recycle_jolt_body(p_object);
+	JPH::Body *jolt_body = previous_jolt_id.IsInvalid() ? body_iface.CreateBody(p_settings) : body_iface.CreateBodyWithID(previous_jolt_id, p_settings);
+
 	if (unlikely(jolt_body == nullptr)) {
 		ERR_PRINT_ONCE(vformat("Failed to create underlying Jolt Physics body for '%s'. "
 							   "Consider increasing maximum number of bodies in project settings. "
@@ -405,9 +438,11 @@ JPH::Body *JoltSpace3D::add_object(const JoltObject3D &p_object, const JPH::Body
 	return jolt_body;
 }
 
-JPH::Body *JoltSpace3D::add_object(const JoltObject3D &p_object, const JPH::SoftBodyCreationSettings &p_settings, bool p_sleeping) {
+JPH::Body *JoltSpace3D::add_object(JoltObject3D &p_object, const JPH::SoftBodyCreationSettings &p_settings, bool p_sleeping) {
 	JPH::BodyInterface &body_iface = get_body_iface();
-	JPH::Body *jolt_body = body_iface.CreateSoftBody(p_settings);
+	JPH::BodyID previous_jolt_id = _recycle_jolt_body(p_object);
+	JPH::Body *jolt_body = previous_jolt_id.IsInvalid() ? body_iface.CreateSoftBody(p_settings) : body_iface.CreateSoftBodyWithID(previous_jolt_id, p_settings);
+
 	if (unlikely(jolt_body == nullptr)) {
 		ERR_PRINT_ONCE(vformat("Failed to create underlying Jolt Physics body for '%s'. "
 							   "Consider increasing maximum number of bodies in project settings. "
@@ -426,14 +461,20 @@ JPH::Body *JoltSpace3D::add_object(const JoltObject3D &p_object, const JPH::Soft
 	return jolt_body;
 }
 
-void JoltSpace3D::remove_object(const JPH::BodyID &p_jolt_id) {
-	JPH::BodyInterface &body_iface = get_body_iface();
+void JoltSpace3D::remove_object(JoltObject3D &p_object) {
+	JPH::BodyID jolt_id = p_object.get_jolt_id();
 
-	if (!pending_objects_sleeping.erase_unordered(p_jolt_id) && !pending_objects_awake.erase_unordered(p_jolt_id)) {
-		body_iface.RemoveBody(p_jolt_id);
+	if (!pending_objects_sleeping.erase_unordered(jolt_id) && !pending_objects_awake.erase_unordered(jolt_id)) {
+		get_body_iface().RemoveBody(jolt_id);
 	}
 
-	body_iface.DestroyBody(p_jolt_id);
+	if (JoltPhysicsServer3D::get_singleton()->is_active()) {
+		// Defer destruction to allow recycling the Jolt ID, in case this body re-enters the same space again before the next simulation step.
+		p_object.enqueue_needs_destruction(this);
+	} else {
+		// Destroy the body immediately if we won't be stepping this space, since it could linger until its `RID` is freed otherwise. Also, the broad phase optimization below depends on this.
+		p_object.destroy_jolt_body(this);
+	}
 
 	// If we're never going to step this space, like in the editor viewport, we need to manually clean up Jolt's broad phase instead, otherwise performance can degrade when doing things like switching scenes.
 	// We'll never actually have zero bodies in any space though, since we always have the default area, so we check if there's one or fewer left instead.
@@ -533,6 +574,18 @@ void JoltSpace3D::enqueue_needs_optimization(SelfList<JoltShapedObject3D> *p_obj
 void JoltSpace3D::dequeue_needs_optimization(SelfList<JoltShapedObject3D> *p_object) {
 	if (p_object->in_list()) {
 		needs_optimization_list.remove(p_object);
+	}
+}
+
+void JoltSpace3D::enqueue_needs_destruction(SelfList<JoltObject3D> *p_object) {
+	if (!p_object->in_list()) {
+		needs_destruction_list.add(p_object);
+	}
+}
+
+void JoltSpace3D::dequeue_needs_destruction(SelfList<JoltObject3D> *p_object) {
+	if (p_object->in_list()) {
+		needs_destruction_list.remove(p_object);
 	}
 }
 

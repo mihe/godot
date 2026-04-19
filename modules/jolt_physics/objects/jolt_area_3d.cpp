@@ -74,15 +74,12 @@ void JoltArea3D::_add_to_space() {
 
 	jolt_settings->SetShape(jolt_shape);
 
-	JPH::Body *new_jolt_body = space->add_object(*this, *jolt_settings, _should_sleep());
-	if (new_jolt_body == nullptr) {
-		return;
+	jolt_body = space->add_object(*this, *jolt_settings, _should_sleep());
+
+	if (jolt_body != nullptr) {
+		delete jolt_settings;
+		jolt_settings = nullptr;
 	}
-
-	jolt_body = new_jolt_body;
-
-	delete jolt_settings;
-	jolt_settings = nullptr;
 }
 
 void JoltArea3D::_enqueue_call_queries() {
@@ -609,52 +606,6 @@ bool JoltArea3D::area_shape_exited(const JPH::BodyID &p_body_id, const JPH::SubS
 
 bool JoltArea3D::shape_exited(const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id) {
 	return body_shape_exited(p_body_id, p_other_shape_id, p_self_shape_id) || area_shape_exited(p_body_id, p_other_shape_id, p_self_shape_id);
-}
-
-void JoltArea3D::body_exited(const JPH::BodyID &p_body_id, bool p_notify) {
-	Overlap *overlap = bodies_by_id.getptr(p_body_id);
-	if (unlikely(overlap == nullptr)) {
-		return;
-	}
-
-	if (unlikely(overlap->shape_pairs.is_empty())) {
-		return;
-	}
-
-	for (const KeyValue<ShapeIDPair, ShapeIndexPair> &E : overlap->shape_pairs) {
-		if (!overlap->pending_added.erase(E.value)) {
-			overlap->pending_removed.push_back(E.value);
-		}
-	}
-
-	_events_changed();
-
-	overlap->shape_pairs.clear();
-
-	if (p_notify) {
-		_notify_body_exited(p_body_id);
-	}
-}
-
-void JoltArea3D::area_exited(const JPH::BodyID &p_body_id) {
-	Overlap *overlap = areas_by_id.getptr(p_body_id);
-	if (unlikely(overlap == nullptr)) {
-		return;
-	}
-
-	if (unlikely(overlap->shape_pairs.is_empty())) {
-		return;
-	}
-
-	for (const KeyValue<ShapeIDPair, ShapeIndexPair> &E : overlap->shape_pairs) {
-		if (!overlap->pending_added.erase(E.value)) {
-			overlap->pending_removed.push_back(E.value);
-		}
-	}
-
-	_events_changed();
-
-	overlap->shape_pairs.clear();
 }
 
 void JoltArea3D::call_queries() {
