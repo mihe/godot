@@ -295,12 +295,17 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 				function done(result) {
 					onSuccess(result['instance'], result['module']);
 				}
-				if (typeof (WebAssembly.instantiateStreaming) !== 'undefined') {
-					WebAssembly.instantiateStreaming(Promise.resolve(r), imports).then(done);
-				} else {
-					r.arrayBuffer().then(function (buffer) {
-						WebAssembly.instantiate(buffer, imports).then(done);
+
+				function instantiateFromBuffer() {
+					return r.arrayBuffer().then(function (buffer) {
+						return WebAssembly.instantiate(buffer, imports).then(done);
 					});
+				}
+
+				if (typeof (WebAssembly.instantiateStreaming) !== 'undefined') {
+					WebAssembly.instantiateStreaming(Promise.resolve(r), imports).then(done).catch(instantiateFromBuffer);
+				} else {
+					instantiateFromBuffer();
 				}
 				r = null;
 				return {};

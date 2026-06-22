@@ -90,7 +90,12 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 		unzCloseCurrentFile(pkg);
 
 		//write
-		String dst = p_dir.path_join(file.replace("godot", p_name));
+		String dst;
+		if (!file.begins_with("godot") || !file.ends_with(".dwarf.wasm")) {
+			dst = p_dir.path_join(file.replace("godot", p_name));
+		} else {
+			dst = p_dir.path_join(file);
+		}
 		Ref<FileAccess> f = FileAccess::open(dst, FileAccess::WRITE);
 		if (f.is_null()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not write file: \"%s\"."), dst));
@@ -874,7 +879,9 @@ Error EditorExportPlatformWeb::_export_project(const Ref<EditorExportPreset> &p_
 		DirAccess::remove_file_or_error(basepath + ".service.worker.js");
 		DirAccess::remove_file_or_error(basepath + ".pck");
 		DirAccess::remove_file_or_error(basepath + ".png");
+		DirAccess::remove_file_or_error(basepath + ".dwarf.wasm");
 		DirAccess::remove_file_or_error(basepath + ".side.wasm");
+		DirAccess::remove_file_or_error(basepath + ".side.dwarf.wasm");
 		DirAccess::remove_file_or_error(basepath + ".wasm");
 		DirAccess::remove_file_or_error(basepath + ".icon.png");
 		DirAccess::remove_file_or_error(basepath + ".apple-touch-icon.png");
