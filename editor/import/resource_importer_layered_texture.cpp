@@ -568,6 +568,20 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, COMPRESS_VRAM_UNCOMPRESSED, r_texture_import->lossy, r_texture_import->basisu_params,
 				Image::COMPRESS_S3TC /* IGNORED */, Image::COMPRESS_PROFILE_AUTOMATIC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, false, Image::BPTC_DETECT);
 	} else {
+		if (can_etc2_astc) {
+			Image::CompressMode image_compress_mode;
+			String image_compress_format;
+			if (r_texture_import->high_quality || is_hdr) {
+				image_compress_mode = Image::COMPRESS_ASTC;
+				image_compress_format = "astc";
+			} else {
+				image_compress_mode = Image::COMPRESS_ETC2;
+				image_compress_format = "etc2";
+			}
+			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, r_texture_import->basisu_params, image_compress_mode, r_texture_import->compression_profile, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true, Image::BPTC_DETECT);
+			r_texture_import->platform_variants->push_back(image_compress_format);
+		}
+
 		if (can_s3tc_bptc) {
 			Image::CompressMode image_compress_mode;
 			Image::BPTCFormat image_bptc_format = Image::BPTC_DETECT;
@@ -581,20 +595,6 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 				image_compress_format = "s3tc";
 			}
 			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, r_texture_import->basisu_params, image_compress_mode, r_texture_import->compression_profile, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true, image_bptc_format);
-			r_texture_import->platform_variants->push_back(image_compress_format);
-		}
-
-		if (can_etc2_astc) {
-			Image::CompressMode image_compress_mode;
-			String image_compress_format;
-			if (r_texture_import->high_quality || is_hdr) {
-				image_compress_mode = Image::COMPRESS_ASTC;
-				image_compress_format = "astc";
-			} else {
-				image_compress_mode = Image::COMPRESS_ETC2;
-				image_compress_format = "etc2";
-			}
-			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, r_texture_import->basisu_params, image_compress_mode, r_texture_import->compression_profile, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true, Image::BPTC_DETECT);
 			r_texture_import->platform_variants->push_back(image_compress_format);
 		}
 	}
